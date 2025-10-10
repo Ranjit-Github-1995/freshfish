@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fresh Fish Market - Premium Quality Fish Delivery</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- PIN Code Verification Modal -->
+    <div class="pin-modal" id="pinModal">
+        <div class="pin-modal-content">
+            <div class="pin-icon">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <h3>Check Delivery Availability</h3>
+            <p class="text-muted">Please enter your PIN code to check if we deliver to your area</p>
+            
+            <input type="text" 
+                   class="form-control pin-input mt-3" 
+                   id="pinCodeInput" 
+                   placeholder="Enter PIN Code"
+                   maxlength="6"
+                   pattern="\d{6}">
+            
+            <button class="btn btn-primary btn-lg w-100 mt-3" onclick="verifyPinCode()">
+                <i class="fas fa-check-circle"></i> Check Availability
+            </button>
+            
+            <div class="service-areas">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> Currently serving: 
+                    <strong>712503, 712502, 712148</strong>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivery Banner (Shows after 2 PM) -->
+    <div class="delivery-banner" id="deliveryBanner">
+        <div class="delivery-banner-text">
+            <i class="fas fa-truck bounce-icon"></i>
+            🐟 All orders freshly delivered tomorrow morning! 
+            <i class="fas fa-clock bounce-icon"></i>
+            Order now for next day delivery! 
+            <i class="fas fa-fish bounce-icon"></i>
+            Fresh fish guaranteed! 
+            <i class="fas fa-truck bounce-icon"></i>
+            🐟 All orders freshly delivered tomorrow morning!
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" id="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="#" onclick="showMainPage()">
+                <i class="fas fa-fish"></i> Fresh Fish Market
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#" onclick="showMainPage()">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white position-relative" href="#">
+                            <i class="fas fa-shopping-cart"></i> Cart
+                            <span class="cart-badge" id="cartCount">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="#" onclick="changePinCode()">
+                            <i class="fas fa-map-marker-alt"></i> <span id="currentPin">PIN: </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Page -->
+    <div id="mainPage" style="display: none;">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="container text-center">
+                <h1 class="display-4 fw-bold mb-4">Fresh Fish Delivered Daily</h1>
+                <p class="lead mb-4">Premium quality fish from trusted suppliers. Order now for next day delivery!</p>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <span class="badge bg-white text-primary p-2"><i class="fas fa-truck"></i> Fast Delivery</span>
+                    <span class="badge bg-white text-primary p-2"><i class="fas fa-certificate"></i> Quality Guaranteed</span>
+                    <span class="badge bg-white text-primary p-2"><i class="fas fa-clock"></i> Fresh Daily</span>
+                    <span class="badge bg-white text-primary p-2"><i class="fab fa-whatsapp"></i> WhatsApp Updates</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Section -->
+        <div class="container">
+            <h2 class="text-center mb-5">Our Premium Fish Collection</h2>
+            <div class="row" id="productsContainer">
+                <!-- Products will be loaded here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Page -->
+    <div id="detailPage" style="display: none;">
+        <div class="container mt-5">
+            <button class="btn btn-outline-primary mb-4" onclick="showMainPage()">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </button>
+            <div class="detail-container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="product-image" style="height: 400px;" id="detailImage">
+                            <i class="fas fa-fish"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h2 id="detailName">Fish Name</h2>
+                        <p class="text-muted" id="detailDescription">Description</p>
+                        <div class="price-tag fs-4 mb-4" id="detailPrice">₹0 per kg</div>
+                        
+                        <div class="mb-4">
+                            <h5>Select Quantity:</h5>
+                            <div class="btn-group" role="group">
+                                <input type="radio" class="btn-check" name="weight" id="weight500" value="500" checked>
+                                <label class="btn btn-outline-primary" for="weight500">500g</label>
+                                
+                                <input type="radio" class="btn-check" name="weight" id="weight750" value="750">
+                                <label class="btn btn-outline-primary" for="weight750">750g</label>
+                                
+                                <input type="radio" class="btn-check" name="weight" id="weight1000" value="1000">
+                                <label class="btn btn-outline-primary" for="weight1000">1kg</label>
+                            </div>
+                        </div>
+                        
+                        <div class="quantity-selector">
+                            <button class="quantity-btn" onclick="decreaseQuantity()">-</button>
+                            <input type="number" class="form-control text-center" style="width: 80px;" value="1" min="1" id="quantity">
+                            <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+                        </div>
+                        
+                        <h4 class="mb-4">Total: <span id="totalPrice">₹0</span></h4>
+                        
+                        <button class="btn btn-add-cart btn-lg w-100" onclick="proceedToPayment()">
+                            <i class="fas fa-shopping-bag"></i> Proceed to Buy
+                        </button>
+                        
+                        <div class="mt-4">
+                            <h5>Features:</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> 100% Fresh</li>
+                                <li><i class="fas fa-check text-success"></i> Daily Stock</li>
+                                <li><i class="fas fa-check text-success"></i> Premium Quality</li>
+                                <li><i class="fas fa-check text-success"></i> Hygienic Packaging</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Information Tabs -->
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <ul class="nav nav-tabs" id="productInfoTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab">
+                                    Description
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="nutrition-tab" data-bs-toggle="tab" data-bs-target="#nutrition" type="button" role="tab">
+                                    Nutritional Info
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="cooking-tab" data-bs-toggle="tab" data-bs-target="#cooking" type="button" role="tab">
+                                    Cooking Tips
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="storage-tab" data-bs-toggle="tab" data-bs-target="#storage" type="button" role="tab">
+                                    Storage & Care
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content p-4 bg-light border border-top-0 rounded-bottom" id="productInfoTabContent">
+                            <!-- Description Tab -->
+                            <div class="tab-pane fade show active" id="description" role="tabpanel">
+                                <h5>About This Fish</h5>
+                                <p id="detailLongDescription">
+                                    Premium quality fish sourced directly from trusted suppliers.
+                                </p>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <h6>Origin & Source:</h6>
+                                        <p id="detailOrigin" class="text-muted">Locally sourced from certified fisheries</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Best For:</h6>
+                                        <p id="detailBestFor" class="text-muted">Curry, Fry, Grill, Steamed preparations</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Nutritional Info Tab -->
+                            <div class="tab-pane fade" id="nutrition" role="tabpanel">
+                                <h5>Nutritional Information</h5>
+                                <p class="text-muted mb-3">Per 100g serving (raw)</p>
+                                <div class="nutrition-table">
+                                    <table class="table table-striped">
+                                        <tbody>
+                                            <tr>
+                                                <td><i class="fas fa-fire text-danger"></i> Calories</td>
+                                                <td class="text-end fw-bold" id="detailCalories">120 kcal</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-drumstick-bite text-primary"></i> Protein</td>
+                                                <td class="text-end fw-bold" id="detailProtein">22g</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-bacon text-warning"></i> Fat</td>
+                                                <td class="text-end fw-bold" id="detailFat">3.5g</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-heart text-danger"></i> Omega-3</td>
+                                                <td class="text-end fw-bold" id="detailOmega3">1.2g</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-bone text-secondary"></i> Calcium</td>
+                                                <td class="text-end fw-bold" id="detailCalcium">50mg</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="fas fa-tint text-info"></i> Iron</td>
+                                                <td class="text-end fw-bold" id="detailIron">1.5mg</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="alert alert-success mt-3">
+                                    <i class="fas fa-heartbeat"></i> <strong>Health Benefits:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>Rich in high-quality protein</li>
+                                        <li>Excellent source of Omega-3 fatty acids</li>
+                                        <li>Supports heart and brain health</li>
+                                        <li>Low in saturated fat</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Cooking Tips Tab -->
+                            <div class="tab-pane fade" id="cooking" role="tabpanel">
+                                <h5>Cooking Instructions</h5>
+                                <div class="cooking-methods">
+                                    <div class="mb-3">
+                                        <h6><i class="fas fa-fire-alt text-danger"></i> Preparation:</h6>
+                                        <ol>
+                                            <li>Thaw the fish if frozen (preferably in refrigerator overnight)</li>
+                                            <li>Rinse thoroughly under cold water</li>
+                                            <li>Pat dry with paper towels</li>
+                                            <li>Marinate as per recipe (minimum 30 minutes)</li>
+                                        </ol>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6><i class="fas fa-clock text-primary"></i> Cooking Time:</h6>
+                                        <ul>
+                                            <li>Pan Fry: 4-5 minutes per side</li>
+                                            <li>Grilling: 6-8 minutes per side</li>
+                                            <li>Curry: 15-20 minutes on medium heat</li>
+                                            <li>Steaming: 10-12 minutes</li>
+                                        </ul>
+                                    </div>
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> <strong>Pro Tip:</strong> 
+                                        Don't overcook the fish as it may become dry and lose its flavor.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Storage Tab -->
+                            <div class="tab-pane fade" id="storage" role="tabpanel">
+                                <h5>Storage Guidelines</h5>
+                                <div class="storage-info">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="storage-card p-3 border rounded">
+                                                <h6><i class="fas fa-snowflake text-info"></i> Refrigeration</h6>
+                                                <p>Store at 0-4°C for up to 2 days</p>
+                                                <small class="text-muted">Keep in the coldest part of your refrigerator</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="storage-card p-3 border rounded">
+                                                <h6><i class="fas fa-igloo text-primary"></i> Freezing</h6>
+                                                <p>Can be frozen at -18°C for up to 3 months</p>
+                                                <small class="text-muted">Wrap tightly in plastic wrap or freezer bags</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="alert alert-info mt-3">
+                                        <h6>Storage Tips:</h6>
+                                        <ul class="mb-0">
+                                            <li>Always store in an airtight container</li>
+                                            <li>Never refreeze thawed fish</li>
+                                            <li>Check for any off odors before cooking</li>
+                                            <li>Use within recommended time for best quality</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Page -->
+    <div id="paymentPage" style="display: none;">
+        <div class="container mt-5">
+            <button class="btn btn-outline-primary mb-3" onclick="backToDetail()">
+                <i class="fas fa-arrow-left"></i> Back to Product
+            </button>
+            <h2 class="text-center mb-5">Complete Your Order</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="payment-form">
+                        <h4 class="mb-4"><i class="fas fa-user-circle"></i> Customer Details</h4>
+                        <form id="paymentForm">
+                            <div class="mb-3">
+                                <label class="form-label"><i class="fas fa-user"></i> Full Name *</label>
+                                <input type="text" class="form-control" id="customerName" placeholder="Enter your full name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label"><i class="fas fa-phone"></i> Phone Number *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">+91</span>
+                                    <input type="tel" class="form-control" id="customerPhone" placeholder="9876543210" pattern="[0-9]{10}" maxlength="10" required>
+                                </div>
+                                <small class="text-muted">You'll receive WhatsApp updates on this number</small>
+                            </div>
+                            
+                            <h5 class="mt-4 mb-3"><i class="fas fa-map-marked-alt"></i> Delivery Address</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label"><i class="fas fa-home"></i> Complete Address *</label>
+                                <textarea class="form-control" id="customerAddress" rows="2" placeholder="House No, Street, Area" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label"><i class="fas fa-landmark"></i> Landmark</label>
+                                <input type="text" class="form-control" id="customerLandmark" placeholder="Near landmark (optional)">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label"><i class="fas fa-map-pin"></i> PIN Code</label>
+                                <input type="text" class="form-control" id="deliveryPin" readonly>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="qr-container">
+                        <h4 class="mb-3"><i class="fas fa-receipt"></i> Payment Details</h4>
+                        <div class="alert alert-info">
+                            <h5>Order Summary</h5>
+                            <p id="orderSummary">Product details will appear here</p>
+                            <hr>
+                            <h4 class="text-primary">Total Amount: <span id="finalAmount">₹0</span></h4>
+                        </div>
+                        
+                        <!-- Notification Info -->
+                        <div class="notification-info mb-3">
+                            <div class="alert alert-success">
+                                <h6><i class="fab fa-whatsapp"></i> You'll Receive:</h6>
+                                <ul class="mb-0 small">
+                                    <li><i class="fab fa-whatsapp text-success"></i> Order confirmation via WhatsApp</li>
+                                    <li><i class="fab fa-whatsapp text-success"></i> Delivery updates via WhatsApp</li>
+                                    <li><i class="fas fa-receipt text-warning"></i> Order details on WhatsApp</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Options -->
+                        <div class="payment-options mb-4">
+                            <h5 class="mb-3">Select Payment Method</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="onlinePayment" value="online" checked>
+                                <label class="form-check-label" for="onlinePayment">
+                                    <i class="fas fa-credit-card text-primary"></i> Online Payment (Cards/UPI/NetBanking)
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="codPayment" value="cod">
+                                <label class="form-check-label" for="codPayment">
+                                    <i class="fas fa-money-bill-wave text-success"></i> Cash on Delivery
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Online Payment Info -->
+                        <div id="onlinePaymentInfo" class="payment-method-info">
+                            <div class="text-center mb-3">
+                                <img src="https://i.imgur.com/YJmFbMw.png" alt="Razorpay" style="height: 40px;" class="mb-2">
+                                <p class="text-muted small">Secure Payment Gateway</p>
+                            </div>
+                            <div class="payment-icons text-center mb-3">
+                                <i class="fab fa-cc-visa fa-2x mx-2 text-primary"></i>
+                                <i class="fab fa-cc-mastercard fa-2x mx-2 text-danger"></i>
+                                <i class="fab fa-google-pay fa-2x mx-2 text-info"></i>
+                                <i class="fas fa-university fa-2x mx-2 text-secondary"></i>
+                            </div>
+                            <p class="text-center text-success small">
+                                <i class="fas fa-shield-alt"></i> 100% Secure Payment
+                            </p>
+                        </div>
+                        
+                        <!-- COD Info -->
+                        <div id="codPaymentInfo" class="payment-method-info" style="display: none;">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-info-circle"></i> Cash on Delivery available
+                                <br>
+                                <small>Please keep exact change ready. WhatsApp message will be sent before delivery.</small>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-success btn-lg w-100" onclick="processPayment()">
+                            <i class="fas fa-lock"></i> Proceed to Pay <span id="payButtonAmount">₹0</span>
+                        </button>
+                        
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-lock"></i> Your information is secure and encrypted
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal with WhatsApp Confirmation -->
+    <!-- Success Modal with WhatsApp Confirmation -->
+<div class="overlay" id="overlay"></div>
+<div class="success-modal" id="successModal">
+    <div class="success-icon">
+        <i class="fas fa-check-circle"></i>
+    </div>
+    <h3>Payment Successful!</h3>
+    <p class="lead mb-2">Your order has been placed successfully.</p>
+    <p class="mb-3">Order ID: <strong id="orderId">ORD123456</strong></p>
+    
+    <div class="alert alert-success text-start">
+        <h6><i class="fas fa-check-circle"></i> Order Confirmed!</h6>
+        <ul class="mb-0 small">
+            <li><i class="fab fa-whatsapp text-success"></i> WhatsApp confirmation ready for: <span id="confirmedPhone"></span></li>
+            <li><i class="fas fa-box text-primary"></i> Order details sent to admin</li>
+            <li><i class="fas fa-truck text-info"></i> Delivery: Tomorrow morning</li>
+        </ul>
+    </div>
+    
+    <div class="alert alert-info text-start small">
+        <i class="fas fa-info-circle"></i> <strong>Note:</strong> You will receive order confirmation on WhatsApp shortly. Please keep your phone nearby.
+    </div>
+    
+    <button class="btn btn-primary mt-3" onclick="closeModal()">Continue Shopping</button>
+</div>
+
+    <!-- Not Available Modal -->
+    <div class="success-modal" id="notAvailableModal" style="display: none;">
+        <div style="font-size: 4rem; color: #ffc107; margin-bottom: 20px;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>Service Not Available</h3>
+        <p>Sorry! We don't deliver to this area yet.</p>
+        <p class="text-muted">We're working on expanding our service areas.</p>
+        <p><strong>Currently serving: 712503, 712502, 712148</strong></p>
+        <button class="btn btn-primary mt-3" onclick="retryPinCode()">Try Another PIN Code</button>
+    </div>
+
+    <!-- WhatsApp Processing Indicator -->
+    <div id="processingIndicator" class="processing-indicator" style="display: none;">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Processing...</span>
+        </div>
+        <p class="mt-2"><i class="fab fa-whatsapp"></i> Sending WhatsApp notifications...</p>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="js/custom.js"></script>
+</body>
+</html>
