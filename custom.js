@@ -1,4 +1,4 @@
-// script.js - Fresh Fish Market E-Commerce with Razorpay, Email & SMS Integration
+// script.js - Fresh Fish Market E-Commerce with Razorpay & FREE WhatsApp Notifications
 
 // Configuration
 const CONFIG = {
@@ -6,25 +6,16 @@ const CONFIG = {
     bannerStartHour: 14, // 2:00 PM in 24-hour format
     sessionStorageKey: 'userPinCode',
     
-    // Razorpay Configuration - YOUR ACTUAL TEST KEYS
-    razorpayKey: 'rzp_test_RQGKJzcpBu5zOY', // Your Razorpay Test Key ID
+    // Razorpay Configuration
+    razorpayKey: 'rzp_live_RRtsemTmyPcpeX',
     businessName: 'Fresh Fish Market',
     businessDescription: 'Premium Quality Fish Delivery',
-    businessLogo: '', // Optional: Add your business logo URL
+    businessLogo: '',
     
-    // Email Configuration - Gmail with EmailJS (UPDATE WITH YOUR KEYS)
-    emailjs: {
-        serviceId: 'service_g5o4cra',     // Your Gmail service ID from EmailJS
-        templateId: 'template_jg1gd9w',   // Your template ID from EmailJS
-        publicKey: 'URnmrhpzGQxp3Gv-r'    // PASTE YOUR PUBLIC KEY HERE
-        // Note: NEVER put your Private Key in frontend code - it's only for server-side
-    },
-    
-    // WhatsApp Configuration (No API needed)
+    // WhatsApp Configuration (Your Business Number)
     whatsapp: {
-        businessNumber: '917890152617', // Added 91 prefix
-        enableCustomerNotification: true,
-        enableBusinessNotification: true
+        adminPhone: '7890152617', // Your business number (10 digits, no +91)
+        enableNotifications: true
     }   
 };
 
@@ -231,18 +222,8 @@ let currentUserPin = '';
 let cartItems = [];
 let currentOrderDetails = null;
 
-// Initialize EmailJS
-function initializeEmailJS() {
-    if (typeof emailjs !== 'undefined' && CONFIG.emailjs.publicKey !== 'URnmrhpzGQxp3Gv-r') {
-        emailjs.init(CONFIG.emailjs.publicKey);
-    }
-}
-
 // Initialize the application
 function init() {
-    // Initialize EmailJS
-    initializeEmailJS();
-    
     // Check if user has a stored PIN in session
     const storedPin = sessionStorage.getItem(CONFIG.sessionStorageKey);
     
@@ -271,6 +252,20 @@ function init() {
     
     // Setup payment method toggle
     setupPaymentMethodToggle();
+    
+    // Request notification permission on load
+    requestNotificationPermission();
+}
+
+// Request browser notification permission
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('✅ Notification permission granted');
+            }
+        });
+    }
 }
 
 // Setup all event listeners
@@ -298,20 +293,6 @@ function setupEventListeners() {
         phoneInput.addEventListener('input', function(e) {
             this.value = this.value.replace(/[^\d]/g, '');
             if (this.value.length === 10) {
-                this.classList.add('is-valid');
-                this.classList.remove('is-invalid');
-            } else {
-                this.classList.remove('is-valid');
-            }
-        });
-    }
-    
-    // Email input handler
-    const emailInput = document.getElementById('customerEmail');
-    if (emailInput) {
-        emailInput.addEventListener('input', function(e) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (emailRegex.test(this.value)) {
                 this.classList.add('is-valid');
                 this.classList.remove('is-invalid');
             } else {
@@ -606,15 +587,14 @@ function setupPaymentMethodToggle() {
 function processPayment() {
     const form = document.getElementById('paymentForm');
     const nameInput = document.getElementById('customerName');
-    const emailInput = document.getElementById('customerEmail');
     const phoneInput = document.getElementById('customerPhone');
     const addressInput = document.getElementById('customerAddress');
     const landmarkInput = document.getElementById('customerLandmark');
     
     let isValid = true;
     
-    // Validate all fields
-    [nameInput, emailInput, phoneInput, addressInput].forEach(input => {
+    // Validate all required fields
+    [nameInput, phoneInput, addressInput].forEach(input => {
         if (!input.value.trim()) {
             isValid = false;
             input.classList.add('is-invalid');
@@ -622,13 +602,6 @@ function processPayment() {
             input.classList.remove('is-invalid');
         }
     });
-    
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailInput.value)) {
-        isValid = false;
-        emailInput.classList.add('is-invalid');
-    }
     
     // Validate phone number (10 digits)
     if (phoneInput.value.length !== 10) {
@@ -644,7 +617,6 @@ function processPayment() {
     // Get customer details
     const customerDetails = {
         name: nameInput.value,
-        email: emailInput.value,
         phone: phoneInput.value,
         address: addressInput.value,
         landmark: landmarkInput.value || '',
@@ -680,8 +652,7 @@ function initiateRazorpayPayment(customerDetails) {
         },
         prefill: {
             name: customerDetails.name,
-            contact: customerDetails.phone,
-            email: customerDetails.email
+            contact: customerDetails.phone
         },
         notes: {
             product: currentProduct.name,
@@ -732,15 +703,13 @@ function handlePaymentSuccess(response, customerDetails) {
         amount: currentOrderDetails.total,
         customerDetails: customerDetails,
         timestamp: new Date().toISOString(),
-        paymentMethod: 'Online'
+        paymentMethod: 'Online Payment'
     };
     
     console.log('Order successful:', orderData);
     
-    // Send confirmation email and SMS
-    sendConfirmationEmail(orderData);
-    sendConfirmationSMS(orderData);
-    sendBrowserNotification(orderData);
+    // Send WhatsApp notifications
+    sendWhatsAppNotifications(orderData);
     
     // Hide processing indicator after 2 seconds
     setTimeout(() => {
@@ -764,15 +733,13 @@ function processCODOrder(customerDetails) {
         amount: currentOrderDetails.total,
         customerDetails: customerDetails,
         timestamp: new Date().toISOString(),
-        paymentMethod: 'COD'
+        paymentMethod: 'Cash on Delivery'
     };
     
     console.log('COD Order placed:', orderData);
     
-    // Send confirmation email and SMS
-    sendConfirmationEmail(orderData);
-    sendConfirmationSMS(orderData);
-    sendBrowserNotification(orderData);
+    // Send WhatsApp notifications
+    sendWhatsAppNotifications(orderData);
     
     // Hide processing indicator after 2 seconds
     setTimeout(() => {
@@ -781,228 +748,228 @@ function processCODOrder(customerDetails) {
     }, 2000);
 }
 
-// Send confirmation email
-function sendConfirmationEmail(orderData) {
-    // Check if EmailJS is configured
-    if (typeof emailjs === 'undefined' || CONFIG.emailjs.publicKey === 'URnmrhpzGQxp3Gv-r') {
-        console.log('EmailJS not configured. Email would be sent with these details:', {
-            to: orderData.customerDetails.email,
-            subject: 'Order Confirmation - Fresh Fish Market',
+// Send WhatsApp notifications (FREE - No API)
+
+// Send order notification to Google Sheets
+function sendWhatsAppNotifications(orderData) {
+    const weight = currentOrderDetails.weight >= 1000 ? 
+                   `${currentOrderDetails.weight/1000}kg` : 
+                   `${currentOrderDetails.weight}g`;
+    const quantity = currentOrderDetails.quantity;
+    
+    // Google Apps Script Web App URL
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbykBg2S8bAVejZQxTZT-2nK3XiFkHAAh7EgM0hNSkghRa9-tXDnNsgj07fC2WG3ykRp/exec'; // Paste the URL you copied
+    
+    // Send order data to Google Sheets
+    fetch(webhookUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
             orderId: orderData.orderId,
+            customerName: orderData.customerDetails.name,
+            customerPhone: orderData.customerDetails.phone,
             product: orderData.product,
-            amount: orderData.amount
-        });
-        return;
-    }
-    
-    // Prepare email parameters
-    const emailParams = {
-        to_email: orderData.customerDetails.email,
-        to_name: orderData.customerDetails.name,
-        order_id: orderData.orderId,
-        product_name: orderData.product,
-        amount: '₹' + orderData.amount,
-        delivery_address: `${orderData.customerDetails.address}, ${orderData.customerDetails.landmark}, PIN: ${orderData.customerDetails.pin}`,
-        payment_method: orderData.paymentMethod,
-        order_date: new Date().toLocaleDateString(),
-        delivery_time: '2-3 hours'
-    };
-    
-    // Send email using EmailJS
-    emailjs.send(CONFIG.emailjs.serviceId, CONFIG.emailjs.templateId, emailParams)
-        .then(function(response) {
-            console.log('Email sent successfully:', response);
-        }, function(error) {
-            console.error('Email sending failed:', error);
-        });
+            amount: orderData.amount.toFixed(2),
+            address: orderData.customerDetails.address,
+            landmark: orderData.customerDetails.landmark || '',
+            pin: orderData.customerDetails.pin,
+            paymentMethod: orderData.paymentMethod,
+            paymentId: orderData.paymentId || '',
+            timestamp: new Date().toISOString()
+        })
+    })
+    .then(() => {
+        console.log('✅ Order sent to Google Sheets & Email notification sent!');
+    })
+    .catch(error => {
+        console.error('❌ Error:', error);
+    });
 }
 
-// Send confirmation SMS via WhatsApp
-function sendConfirmationSMS(orderData) {
-    const phone = orderData.customerDetails.phone;
-    const name = orderData.customerDetails.name;
-    const orderId = orderData.orderId;
-    const amount = orderData.amount;
-    const product = orderData.product;
-    
-    // Format message for WhatsApp
-    const message = `
-*🐟 ORDER CONFIRMATION - Fresh Fish Market*
-%0A%0A
-Dear ${name},%0A
-Thank you for your order!%0A%0A
-*Order Details:*%0A
-📦 Order ID: ${orderId}%0A
-🐠 Product: ${product}%0A
-💰 Amount: ₹${amount}%0A
-📱 Phone: +91 ${phone}%0A%0A
-📍 *Delivery Address:*%0A
-${orderData.customerDetails.address}%0A
-${orderData.customerDetails.landmark}%0A
-PIN: ${orderData.customerDetails.pin}%0A%0A
-🚚 Expected Delivery: 2-3 hours%0A%0A
-Thank you for shopping with us!%0A
-*Fresh Fish Market* 🐟
-    `.replace(/\n/g, '%0A');
-    
-    // Send to CUSTOMER's WhatsApp (Order Confirmation)
-    if (CONFIG.whatsapp.enableCustomerNotification) {
-        const customerWhatsAppUrl = `https://wa.me/91${phone}?text=${message}`;
-        
-        // Open WhatsApp in new tab for customer
-        setTimeout(() => {
-            window.open(customerWhatsAppUrl, '_blank');
-            console.log('WhatsApp message opened for customer:', phone);
-        }, 1000);
-    }
-    
-    // Send to BUSINESS WhatsApp (New Order Notification)
-    if (CONFIG.whatsapp.enableBusinessNotification) {
-        const businessMessage = `
-*🎉 NEW ORDER RECEIVED!*%0A
-━━━━━━━━━━━━━━━━%0A
-📦 Order ID: ${orderId}%0A
-👤 Customer: ${name}%0A
-📱 Phone: +91 ${phone}%0A
-📧 Email: ${orderData.customerDetails.email}%0A
-━━━━━━━━━━━━━━━━%0A
-🐠 Product: ${product}%0A
-💰 Amount: ₹${amount}%0A
-💳 Payment: ${orderData.paymentMethod}%0A
-━━━━━━━━━━━━━━━━%0A
-📍 Delivery:%0A
-${orderData.customerDetails.address}%0A
-${orderData.customerDetails.landmark}%0A
-PIN: ${orderData.customerDetails.pin}%0A
-━━━━━━━━━━━━━━━━%0A
-⏰ ${new Date().toLocaleString()}
-        `.replace(/\n/g, '%0A');
-        
-        const businessWhatsAppUrl = `https://wa.me/${CONFIG.whatsapp.businessNumber}?text=${businessMessage}`;
-        
-        // Create a notification button for business
-        const notificationDiv = document.createElement('div');
-        notificationDiv.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;';
-        notificationDiv.innerHTML = `
-            <a href="${businessWhatsAppUrl}" target="_blank" class="btn btn-success btn-lg shadow">
-                <i class="fab fa-whatsapp"></i> View Order in WhatsApp
-            </a>
-        `;
-        document.body.appendChild(notificationDiv);
-        
-        // Remove after 10 seconds
-        setTimeout(() => {
-            notificationDiv.remove();
-        }, 10000);
-    }
-    
-    console.log('WhatsApp notifications prepared');
-}
+// Send order notification to your email (FREE backup)
+function sendOrderEmail(orderData, whatsappLink) {
+    const subject = `New Order ${orderData.orderId} - ${orderData.customerDetails.name}`;
+    const body = `
+New Order Received!
 
-// Send confirmation email via Gmail (EmailJS)
-function sendConfirmationEmail(orderData) {
-    // Initialize EmailJS if not already done
-    if (typeof emailjs !== 'undefined' && CONFIG.emailjs.publicKey !== 'URnmrhpzGQxp3Gv-r') {
-        emailjs.init(CONFIG.emailjs.publicKey);
-    } else {
-        console.log('EmailJS not configured. Follow setup instructions below.');
-        console.log('Email would be sent to:', orderData.customerDetails.email);
-        showEmailSetupInstructions();
-        return;
-    }
-    
-    // Prepare email parameters
-    const emailParams = {
-        // To customer
-        to_email: orderData.customerDetails.email,
-        to_name: orderData.customerDetails.name,
-        
-        // Order details
-        order_id: orderData.orderId,
-        product_name: orderData.product,
-        amount: '₹' + orderData.amount,
-        quantity: currentOrderDetails.quantity,
-        weight: currentOrderDetails.weight >= 1000 ? 
-                `${currentOrderDetails.weight/1000}kg` : 
-                `${currentOrderDetails.weight}g`,
-        
-        // Customer details
-        customer_name: orderData.customerDetails.name,
-        customer_phone: orderData.customerDetails.phone,
-        customer_email: orderData.customerDetails.email,
-        
-        // Delivery details
-        delivery_address: orderData.customerDetails.address,
-        delivery_landmark: orderData.customerDetails.landmark || 'N/A',
-        delivery_pin: orderData.customerDetails.pin,
-        
-        // Payment details
-        payment_method: orderData.paymentMethod,
-        payment_id: orderData.paymentId || 'N/A',
-        
-        // Time details
-        order_date: new Date().toLocaleDateString(),
-        order_time: new Date().toLocaleTimeString(),
-        delivery_time: '2-3 hours',
-        
-        // Business details
-        business_name: CONFIG.businessName,
-        business_phone: CONFIG.whatsapp.businessNumber.substring(2), // Remove 91
-        business_email: 'support@freshfishmarket.com' // Your business email
-    };
-    
-    // Send email using EmailJS
-    emailjs.send(CONFIG.emailjs.serviceId, CONFIG.emailjs.templateId, emailParams)
-        .then(function(response) {
-            console.log('✅ Email sent successfully:', response);
-            showNotification('Email sent to ' + orderData.customerDetails.email, 'success');
-        }, function(error) {
-            console.error('❌ Email sending failed:', error);
-            showNotification('Email sending failed. Please check configuration.', 'error');
-        });
-}
+Order ID: ${orderData.orderId}
+Customer: ${orderData.customerDetails.name}
+Phone: +91${orderData.customerDetails.phone}
+Product: ${orderData.product}
+Amount: ₹${orderData.amount}
 
+Address:
+${orderData.customerDetails.address}
+${orderData.customerDetails.landmark}
+PIN: ${orderData.customerDetails.pin}
 
+Payment: ${orderData.paymentMethod}
 
-// Show notification helper
-function showNotification(message, type = 'info') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type} position-fixed top-0 start-50 translate-middle-x mt-3`;
-    alertDiv.style.zIndex = '10000';
-    alertDiv.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i> ${message}
+Click to send WhatsApp:
+${whatsappLink}
     `;
-    document.body.appendChild(alertDiv);
     
-    setTimeout(() => {
-        alertDiv.remove();
-    }, 3000);
+    const mailtoLink = `mailto:your-email@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    // Silent email trigger
+    const link = document.createElement('a');
+    link.href = mailtoLink;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => link.remove(), 100);
+}
+
+// Send to FREE webhook for automatic notifications
+function sendToWebhook(orderData, adminMessage, customerMessage) {
+    // Using Make.com (formerly Integromat) - 1000 free operations/month
+    const webhookUrl = 'YOUR_MAKE_WEBHOOK_URL'; // Add your webhook URL here
+    
+    fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            orderId: orderData.orderId,
+            customerName: orderData.customerDetails.name,
+            customerPhone: orderData.customerDetails.phone,
+            product: orderData.product,
+            amount: orderData.amount,
+            address: orderData.customerDetails.address,
+            landmark: orderData.customerDetails.landmark,
+            pin: orderData.customerDetails.pin,
+            paymentMethod: orderData.paymentMethod,
+            paymentId: orderData.paymentId || '',
+            adminPhone: CONFIG.whatsapp.adminPhone,
+            adminMessage: adminMessage,
+            customerMessage: customerMessage,
+            timestamp: orderData.timestamp
+        })
+    })
+    .then(response => {
+        console.log('✅ Webhook notification sent');
+    })
+    .catch(error => {
+        console.error('❌ Webhook failed:', error);
+    });
+}
+
+// Play notification sound
+function playNotificationSound() {
+    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSx+zPDTgi0HHm7A7+OZSA0PVq/m77BdGAg+ltryxnMpBSh8yvHZjDoJF2S56+adUBALTqXh8bllHAU2j9XyzncsBS1+zPDTgjAHG2u+7uSaSwwOUqvm7q9aFgo9ldjxw3ElBSp6yPHaizYKGGO26+WcTw8KTKHf8rtlGwU0jdPyz3YqBS1+y/HYjTwIF2i76+OaTAoPVavl7bBcGQc9lt3yxHIoBSl6x/HZizUKGGG26+ScUBEJTKLi8rxjHAU2kdbyz3QpBSx+y/HYizYKF2S66+WVVBENXK/j8LxfHQc6ltzywnQqByl5yPDXiTkJGGC26+OaTQ4KTaXh8rpoHQY1j9TyznUrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU1k9Xxz3ImBCh5yPHaizULF2S56+WaTxAJTqHi8rhlHQU1j9TyznYrBSx9y/HYjDYKGGO76eWcTQ8LTaHg8MZjGwU=');
+    audio.play().catch(e => console.log('Sound play failed:', e));
+}
+
+// Show admin notification card
+function showAdminNotificationCard(orderId, customerName, amount, product, adminLink, customerLink) {
+    const notificationDiv = document.createElement('div');
+    notificationDiv.id = 'adminOrderNotification';
+    notificationDiv.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10000;
+        max-width: 380px;
+        animation: slideInRight 0.5s ease-out, pulse 2s infinite;
+        box-shadow: 0 8px 30px rgba(0,255,0,0.3);
+    `;
+    
+    notificationDiv.innerHTML = `
+        <div class="card border-success" style="border-width: 3px; background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="text-success mb-0 fw-bold">
+                        <i class="fas fa-bell fa-shake"></i> NEW ORDER!
+                    </h5>
+                    <button type="button" class="btn-close" onclick="document.getElementById('adminOrderNotification').remove()"></button>
+                </div>
+                <hr class="my-2 border-success">
+                
+                <div class="mb-2">
+                    <small class="text-muted">Order ID</small>
+                    <p class="mb-1 fw-bold">${orderId}</p>
+                </div>
+                
+                <div class="mb-2">
+                    <small class="text-muted">Customer</small>
+                    <p class="mb-1 fw-bold">${customerName}</p>
+                </div>
+                
+                <div class="mb-2">
+                    <small class="text-muted">Product</small>
+                    <p class="mb-1">${product}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Amount</small>
+                    <h4 class="mb-0 text-success">₹${amount}</h4>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="${adminLink}" target="_blank" class="btn btn-success btn-lg">
+                        <i class="fab fa-whatsapp fa-lg"></i> View Full Order Details
+                    </a>
+                    <a href="${customerLink}" target="_blank" class="btn btn-outline-success">
+                        <i class="fab fa-whatsapp"></i> Send Confirmation to Customer
+                    </a>
+                </div>
+                
+                <div class="alert alert-light mt-2 mb-0 py-2 small text-center">
+                    <i class="fas fa-info-circle text-primary"></i> Click button to open WhatsApp with order details
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add animations
+    if (!document.getElementById('notificationAnimations')) {
+        const style = document.createElement('style');
+        style.id = 'notificationAnimations';
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes pulse {
+                0%, 100% { box-shadow: 0 8px 30px rgba(0,255,0,0.3); }
+                50% { box-shadow: 0 8px 40px rgba(0,255,0,0.6); }
+            }
+            .fa-shake {
+                animation: shake 0.5s infinite;
+            }
+            @keyframes shake {
+                0%, 100% { transform: rotate(0deg); }
+                25% { transform: rotate(-10deg); }
+                75% { transform: rotate(10deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notificationDiv);
+    
+    // Keep notification until clicked (don't auto-remove)
+    console.log('✅ Admin notification displayed!');
 }
 
 // Show success modal
+// Show success modal (Clean - no WhatsApp mention)
 function showSuccessModal(orderId, paymentType, customerDetails) {
     document.getElementById('orderId').textContent = orderId;
-    document.getElementById('confirmedEmail').textContent = customerDetails.email;
     document.getElementById('confirmedPhone').textContent = '+91 ' + customerDetails.phone;
     
-    // Update success message based on payment type
+    // Simple success message
     const successModal = document.getElementById('successModal');
-    if (paymentType === 'cod') {
-        successModal.querySelector('h3').textContent = 'Order Placed Successfully!';
-        successModal.querySelector('p').textContent = 'Your order has been confirmed for Cash on Delivery.';
-    } else {
-        successModal.querySelector('h3').textContent = 'Payment Successful!';
-        successModal.querySelector('p').textContent = 'Your payment has been received successfully.';
-    }
+    successModal.querySelector('h3').textContent = '✅ Order Placed Successfully!';
+    successModal.querySelector('.lead').textContent = 'Thank you for your order!';
     
     // Show modal
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('successModal').style.display = 'block';
-}
-
-// Confirm payment (deprecated - replaced by processPayment)
-function confirmPayment() {
-    processPayment();
 }
 
 // Close success modal
@@ -1029,6 +996,5 @@ window.increaseQuantity = increaseQuantity;
 window.decreaseQuantity = decreaseQuantity;
 window.proceedToPayment = proceedToPayment;
 window.processPayment = processPayment;
-window.confirmPayment = confirmPayment;
 window.closeModal = closeModal;
 window.backToDetail = backToDetail;
