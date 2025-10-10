@@ -7,7 +7,7 @@ const CONFIG = {
     sessionStorageKey: 'userPinCode',
     
     // Razorpay Configuration
-    razorpayKey: 'rzp_test_RQGKJzcpBu5zOY',
+    razorpayKey: 'rzp_live_RRtsemTmyPcpeX',
     businessName: 'Fresh Fish Market',
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
