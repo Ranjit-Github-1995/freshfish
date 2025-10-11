@@ -327,6 +327,7 @@
     </div>
 
     <!-- Payment Page -->
+    <!-- Payment Page -->
     <div id="paymentPage" style="display: none;">
         <div class="container mt-5">
             <button class="btn btn-outline-primary mb-3" onclick="backToDetail()">
@@ -403,11 +404,57 @@
                             <p class="text-center text-success small">
                                 <i class="fas fa-shield-alt"></i> 100% Secure Payment
                             </p>
+
+                            <!-- QR Code Payment Section -->
+                            <div class="qr-payment-section mt-4 mb-4">
+                                <div class="text-center mb-3">
+                                    <button class="btn btn-outline-primary w-100" onclick="generatePaymentQR()" id="generateQRBtn">
+                                        <i class="fas fa-qrcode"></i> Generate UPI QR Code
+                                    </button>
+                                </div>
+                                
+                                <!-- QR Code Display Area -->
+                                <div id="qrCodeDisplay" style="display: none;">
+                                    <div class="card border-success">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-success mb-3">
+                                                <i class="fas fa-qrcode"></i> Scan QR Code to Pay
+                                            </h6>
+                                            
+                                            <!-- QR Code will appear here -->
+                                            <div id="qrCodeContainer" class="mb-3"></div>
+                                            
+                                            <!-- Payment Details -->
+                                            <div class="alert alert-light">
+                                                <p class="mb-1"><strong>Amount to Pay:</strong> <span id="qrAmount" class="text-success fs-5"></span></p>
+                                                <p class="mb-1"><strong>Order ID:</strong> <span id="qrOrderId" class="small"></span></p>
+                                            </div>
+                                            
+                                            <div class="alert alert-info small">
+                                                <i class="fas fa-info-circle"></i> Open any UPI app (GPay, PhonePe, Paytm) and scan this QR code to pay
+                                            </div>
+                                            
+                                            <!-- Payment Confirmation Button -->
+                                            <button class="btn btn-success w-100 mb-2" onclick="confirmQRPayment()">
+                                                <i class="fas fa-check-circle"></i> I Have Paid
+                                            </button>
+                                            
+                                            <button class="btn btn-outline-secondary w-100" onclick="hideQRCode()">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mb-3">
+                                <small class="text-muted">OR</small>
+                            </div>
+
+                            <button class="btn btn-success btn-lg w-100" onclick="processPayment()">
+                                <i class="fas fa-credit-card"></i> Pay with Card/UPI/NetBanking <span id="payButtonAmount">₹0</span>
+                            </button>
                         </div>
-                        
-                        <button class="btn btn-success btn-lg w-100" onclick="processPayment()">
-                            <i class="fas fa-lock"></i> Pay Now <span id="payButtonAmount">₹0</span>
-                        </button>
                         
                         <div class="text-center mt-3">
                             <small class="text-muted">
@@ -463,6 +510,8 @@
         <p class="mt-2"><i class="fas fa-lock"></i> Processing your payment...</p>
     </div>
 
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Razorpay Checkout Script -->

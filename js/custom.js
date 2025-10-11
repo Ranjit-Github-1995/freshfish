@@ -1,30 +1,36 @@
-// script.js - Fresh Fish Market E-Commerce with Razorpay & FREE WhatsApp Notifications
+// script.js - Fresh Fish Market E-Commerce with Razorpay & UPI QR Code
 
 // Configuration
 const CONFIG = {
     validPinCodes: ['712503', '712502', '712148'],
-    bannerStartHour: 14, // 2:00 PM in 24-hour format
+    bannerStartHour: 14,
     sessionStorageKey: 'userPinCode',
     
     // Razorpay Configuration
     razorpayKey: 'rzp_live_RRtsemTmyPcpeX',
-    businessName: 'Fresh Fish Market',
+    businessName: 'Fresh Fish',
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
     
-    // WhatsApp Configuration (Your Business Number)
+    // UPI Configuration
+    upi: {
+        id: '6291495912@naviaxis',
+        name: 'Fresh Fish'
+    },
+    
+    // WhatsApp Configuration
     whatsapp: {
-        adminPhone: '7890152617', // Your business number (10 digits, no +91)
+        adminPhone: '7890152617',
         enableNotifications: true
     }   
 };
 
-// Fish products data with detailed information
+// Fish products data
 const products = [
     { 
         id: 1, 
         name: 'Rohu Fish', 
-        price: 1, 
+        price: 280, 
         description: 'Fresh water fish, rich in omega-3', 
         icon: '🐟',
         longDescription: 'Rohu is one of the most popular freshwater fish in Bengali cuisine. Known for its tender meat and mild flavor.',
@@ -524,7 +530,146 @@ function backToDetail() {
     }
 }
 
-// Process payment (Online Only - Razorpay)
+// Generate UPI Payment QR Code
+function generatePaymentQR() {
+    if (!currentOrderDetails) {
+        alert('Please complete order details first');
+        return;
+    }
+    
+    // Validate customer details
+    const nameInput = document.getElementById('customerName');
+    const phoneInput = document.getElementById('customerPhone');
+    const addressInput = document.getElementById('customerAddress');
+    
+    let isValid = true;
+    
+    [nameInput, phoneInput, addressInput].forEach(input => {
+        if (!input.value.trim()) {
+            isValid = false;
+            input.classList.add('is-invalid');
+        } else {
+            input.classList.remove('is-invalid');
+        }
+    });
+    
+    if (phoneInput.value.length !== 10) {
+        isValid = false;
+        phoneInput.classList.add('is-invalid');
+    }
+    
+    if (!isValid) {
+        alert('Please fill all required customer details first');
+        return;
+    }
+    
+    // Generate unique order ID
+    const orderId = 'QR' + Date.now();
+    const amount = currentOrderDetails.total.toFixed(2);
+    
+    // Store QR order details
+    window.currentQROrder = {
+        orderId: orderId,
+        amount: amount,
+        customerDetails: {
+            name: nameInput.value,
+            phone: phoneInput.value,
+            address: addressInput.value,
+            landmark: document.getElementById('customerLandmark').value || '',
+            pin: currentUserPin
+        }
+    };
+    
+    // UPI Payment String with your UPI ID
+    const upiID = CONFIG.upi.id;
+    const payeeName = CONFIG.upi.name;
+    const upiString = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('Order ' + orderId)}`;
+    
+    // Generate QR Code
+    const qrContainer = document.getElementById('qrCodeContainer');
+    qrContainer.innerHTML = ''; // Clear previous QR
+    
+    // Use QRCode.js library to generate QR
+    const qr = new QRCode(qrContainer, {
+        text: upiString,
+        width: 250,
+        height: 250,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    
+    // Update display
+    document.getElementById('qrAmount').textContent = '₹' + amount;
+    document.getElementById('qrOrderId').textContent = orderId;
+    
+    // Show QR code section
+    document.getElementById('generateQRBtn').style.display = 'none';
+    document.getElementById('qrCodeDisplay').style.display = 'block';
+    
+    console.log('✅ QR Code generated for order:', orderId);
+    console.log('💰 Amount: ₹' + amount);
+    console.log('📱 UPI ID:', upiID);
+}
+
+// Hide QR Code
+function hideQRCode() {
+    document.getElementById('qrCodeDisplay').style.display = 'none';
+    document.getElementById('generateQRBtn').style.display = 'block';
+    
+    // Clear QR code
+    const qrContainer = document.getElementById('qrCodeContainer');
+    qrContainer.innerHTML = '';
+}
+
+// Confirm QR Payment (Manual confirmation)
+function confirmQRPayment() {
+    if (!window.currentQROrder) {
+        alert('No QR order found');
+        return;
+    }
+    
+    // Show confirmation dialog
+    const confirmed = confirm(
+        '✅ Please confirm that you have completed the payment.\n\n' +
+        '📦 Order ID: ' + window.currentQROrder.orderId + '\n' +
+        '💰 Amount: ₹' + window.currentQROrder.amount + '\n' +
+        '🏪 Paid to: Fresh Fish\n\n' +
+        'Click OK if payment is completed.'
+    );
+    
+    if (!confirmed) {
+        return;
+    }
+    
+    // Show processing
+    document.getElementById('processingIndicator').style.display = 'block';
+    
+    // Create order data
+    const orderData = {
+        orderId: window.currentQROrder.orderId,
+        paymentId: 'UPI_QR_' + Date.now(),
+        product: currentProduct.name,
+        amount: parseFloat(window.currentQROrder.amount),
+        customerDetails: window.currentQROrder.customerDetails,
+        timestamp: new Date().toISOString(),
+        paymentMethod: 'UPI QR Code'
+    };
+    
+    console.log('✅ QR Payment confirmed:', orderData);
+    
+    // Send to Google Sheets
+    sendWhatsAppNotifications(orderData);
+    
+    // Hide processing and show success
+    setTimeout(() => {
+        document.getElementById('processingIndicator').style.display = 'none';
+        hideQRCode();
+        showSuccessModal(orderData.orderId, 'qr', orderData.customerDetails);
+    }, 2000);
+}
+
+// Process payment (Razorpay Gateway)
 function processPayment() {
     const form = document.getElementById('paymentForm');
     const nameInput = document.getElementById('customerName');
@@ -627,7 +772,7 @@ function handlePaymentSuccess(response, customerDetails) {
         amount: currentOrderDetails.total,
         customerDetails: customerDetails,
         timestamp: new Date().toISOString(),
-        paymentMethod: 'Online Payment'
+        paymentMethod: 'Online Payment (Razorpay)'
     };
     
     console.log('Order successful:', orderData);
@@ -647,7 +792,7 @@ function sendWhatsAppNotifications(orderData) {
                    `${currentOrderDetails.weight}g`;
     const quantity = currentOrderDetails.quantity;
     
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbydobn8syQvWiiH0gm7jxZzOGw3CstdjKO2q0tZnp-nM2kTJf0t4PYhDqwzpxi1B38e/exec';
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbyCrSuS1dFafnTkXjW-nCcF_tsMEbFpRXSMKAb65ZmM_4_nhOHRuB3Ho0mH9s0c4Cih/exec';
     
     fetch(webhookUrl, {
         method: 'POST',
@@ -660,8 +805,8 @@ function sendWhatsAppNotifications(orderData) {
             customerName: orderData.customerDetails.name,
             customerPhone: orderData.customerDetails.phone,
             product: orderData.product,
-            quantity: quantity, // Added quantity
-            weight: weight, // Added weight
+            quantity: quantity,
+            weight: weight,
             amount: orderData.amount.toFixed(2),
             address: orderData.customerDetails.address,
             landmark: orderData.customerDetails.landmark || '',
@@ -685,8 +830,14 @@ function showSuccessModal(orderId, paymentType, customerDetails) {
     document.getElementById('confirmedPhone').textContent = '+91 ' + customerDetails.phone;
     
     const successModal = document.getElementById('successModal');
-    successModal.querySelector('h3').textContent = '✅ Payment Successful!';
-    successModal.querySelector('.lead').textContent = 'Your payment has been received and order is confirmed.';
+    
+    if (paymentType === 'qr') {
+        successModal.querySelector('h3').textContent = '✅ Order Placed Successfully!';
+        successModal.querySelector('.lead').textContent = 'Your UPI payment has been received and order is confirmed.';
+    } else {
+        successModal.querySelector('h3').textContent = '✅ Payment Successful!';
+        successModal.querySelector('.lead').textContent = 'Your payment has been received and order is confirmed.';
+    }
     
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('successModal').style.display = 'block';
@@ -700,6 +851,9 @@ function closeModal() {
     
     document.getElementById('paymentForm').reset();
     document.getElementById('deliveryPin').value = currentUserPin;
+    
+    // Clear QR order
+    window.currentQROrder = null;
 }
 
 // Initialize when DOM is ready
@@ -715,5 +869,8 @@ window.increaseQuantity = increaseQuantity;
 window.decreaseQuantity = decreaseQuantity;
 window.proceedToPayment = proceedToPayment;
 window.processPayment = processPayment;
+window.generatePaymentQR = generatePaymentQR;
+window.hideQRCode = hideQRCode;
+window.confirmQRPayment = confirmQRPayment;
 window.closeModal = closeModal;
 window.backToDetail = backToDetail;
