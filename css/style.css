@@ -494,30 +494,33 @@ body {
     animation: shake 0.5s;
 }
 
-/* QR Code Payment Section */
-.qr-payment-section {
-    border-top: 1px solid #dee2e6;
-    border-bottom: 1px solid #dee2e6;
-    padding: 20px 0;
+/* UPI Highlight Section */
+.upi-highlight {
+    animation: pulse 2s infinite;
 }
 
-#qrCodeContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 10px;
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
 }
 
-#qrCodeContainer canvas {
-    border: 5px solid #fff;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 10px;
+.payment-icons-section i {
+    transition: transform 0.3s ease;
 }
 
-.qr-payment-section .card {
-    animation: fadeIn 0.3s ease-in;
+.payment-icons-section i:hover {
+    transform: scale(1.2);
+}
+
+/* Payment Button Animation */
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    transition: all 0.3s ease;
 }
 
 @keyframes fadeIn {
