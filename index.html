@@ -380,13 +380,57 @@
                         </div>
                         
                         <!-- Payment Method (Online Only) -->
+                        <!-- Payment Method Section -->
                         <div class="payment-options mb-4">
                             <h5 class="mb-3">Payment Method</h5>
                             <div class="alert alert-primary">
-                                <i class="fas fa-credit-card"></i> <strong>Online Payment Only</strong>
+                                <i class="fas fa-mobile-alt"></i> <strong>Secure Online Payment</strong>
                                 <br>
-                                <small>We accept Cards, UPI, Net Banking & Digital Wallets</small>
+                                <small>UPI • Cards • Net Banking • Wallets</small>
                             </div>
+                        </div>
+
+                        <!-- Payment Info -->
+                        <div class="payment-method-info">
+                            <div class="text-center mb-3">
+                                <img src="https://i.imgur.com/YJmFbMw.png" alt="Razorpay" style="height: 40px;" class="mb-2">
+                                <p class="text-muted small">Secure Payment Gateway</p>
+                            </div>
+                            
+                            <!-- Payment Icons with UPI Highlighted -->
+                            <div class="payment-icons text-center mb-3">
+                                <div class="upi-highlight mb-2">
+                                    <i class="fas fa-mobile-alt fa-3x text-success"></i>
+                                    <p class="small fw-bold text-success mb-0">Scan & Pay with UPI</p>
+                                    <p class="small text-muted">GPay • PhonePe • Paytm • BHIM</p>
+                                </div>
+                                <hr>
+                                <p class="small text-muted mb-2">Also Accepts:</p>
+                                <i class="fab fa-cc-visa fa-2x mx-2 text-primary"></i>
+                                <i class="fab fa-cc-mastercard fa-2x mx-2 text-danger"></i>
+                                <i class="fas fa-university fa-2x mx-2 text-secondary"></i>
+                            </div>
+                            
+                            <div class="alert alert-success small">
+                                <i class="fas fa-shield-alt"></i> <strong>How it works:</strong>
+                                <ol class="mb-0 mt-2 ps-3">
+                                    <li>Click "Pay Now" button</li>
+                                    <li>Select UPI in payment window</li>
+                                    <li>Scan QR code or enter UPI ID</li>
+                                    <li>Complete payment in your UPI app</li>
+                                    <li>Order confirmed automatically!</li>
+                                </ol>
+                            </div>
+                            
+                            <button class="btn btn-success btn-lg w-100" onclick="processPayment()">
+                                <i class="fas fa-lock"></i> Pay Now <span id="payButtonAmount">₹0</span>
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-lock"></i> 100% Secure & Verified Payment
+                            </small>
                         </div>
                         
                         <!-- Online Payment Info -->

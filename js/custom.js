@@ -1,4 +1,4 @@
-// script.js - Fresh Fish Market E-Commerce with Razorpay & UPI QR Code
+// script.js - Fresh Fish Market with Razorpay UPI (Auto-Verified)
 
 // Configuration
 const CONFIG = {
@@ -11,12 +11,6 @@ const CONFIG = {
     businessName: 'Fresh Fish',
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
-    
-    // UPI Configuration
-    upi: {
-        id: '6291495912@naviaxis',
-        name: 'Fresh Fish'
-    },
     
     // WhatsApp Configuration
     whatsapp: {
@@ -530,146 +524,7 @@ function backToDetail() {
     }
 }
 
-// Generate UPI Payment QR Code
-function generatePaymentQR() {
-    if (!currentOrderDetails) {
-        alert('Please complete order details first');
-        return;
-    }
-    
-    // Validate customer details
-    const nameInput = document.getElementById('customerName');
-    const phoneInput = document.getElementById('customerPhone');
-    const addressInput = document.getElementById('customerAddress');
-    
-    let isValid = true;
-    
-    [nameInput, phoneInput, addressInput].forEach(input => {
-        if (!input.value.trim()) {
-            isValid = false;
-            input.classList.add('is-invalid');
-        } else {
-            input.classList.remove('is-invalid');
-        }
-    });
-    
-    if (phoneInput.value.length !== 10) {
-        isValid = false;
-        phoneInput.classList.add('is-invalid');
-    }
-    
-    if (!isValid) {
-        alert('Please fill all required customer details first');
-        return;
-    }
-    
-    // Generate unique order ID
-    const orderId = 'QR' + Date.now();
-    const amount = currentOrderDetails.total.toFixed(2);
-    
-    // Store QR order details
-    window.currentQROrder = {
-        orderId: orderId,
-        amount: amount,
-        customerDetails: {
-            name: nameInput.value,
-            phone: phoneInput.value,
-            address: addressInput.value,
-            landmark: document.getElementById('customerLandmark').value || '',
-            pin: currentUserPin
-        }
-    };
-    
-    // UPI Payment String with your UPI ID
-    const upiID = CONFIG.upi.id;
-    const payeeName = CONFIG.upi.name;
-    const upiString = `upi://pay?pa=${upiID}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent('Order ' + orderId)}`;
-    
-    // Generate QR Code
-    const qrContainer = document.getElementById('qrCodeContainer');
-    qrContainer.innerHTML = ''; // Clear previous QR
-    
-    // Use QRCode.js library to generate QR
-    const qr = new QRCode(qrContainer, {
-        text: upiString,
-        width: 250,
-        height: 250,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
-    
-    // Update display
-    document.getElementById('qrAmount').textContent = '₹' + amount;
-    document.getElementById('qrOrderId').textContent = orderId;
-    
-    // Show QR code section
-    document.getElementById('generateQRBtn').style.display = 'none';
-    document.getElementById('qrCodeDisplay').style.display = 'block';
-    
-    console.log('✅ QR Code generated for order:', orderId);
-    console.log('💰 Amount: ₹' + amount);
-    console.log('📱 UPI ID:', upiID);
-}
-
-// Hide QR Code
-function hideQRCode() {
-    document.getElementById('qrCodeDisplay').style.display = 'none';
-    document.getElementById('generateQRBtn').style.display = 'block';
-    
-    // Clear QR code
-    const qrContainer = document.getElementById('qrCodeContainer');
-    qrContainer.innerHTML = '';
-}
-
-// Confirm QR Payment (Manual confirmation)
-function confirmQRPayment() {
-    if (!window.currentQROrder) {
-        alert('No QR order found');
-        return;
-    }
-    
-    // Show confirmation dialog
-    const confirmed = confirm(
-        '✅ Please confirm that you have completed the payment.\n\n' +
-        '📦 Order ID: ' + window.currentQROrder.orderId + '\n' +
-        '💰 Amount: ₹' + window.currentQROrder.amount + '\n' +
-        '🏪 Paid to: Fresh Fish\n\n' +
-        'Click OK if payment is completed.'
-    );
-    
-    if (!confirmed) {
-        return;
-    }
-    
-    // Show processing
-    document.getElementById('processingIndicator').style.display = 'block';
-    
-    // Create order data
-    const orderData = {
-        orderId: window.currentQROrder.orderId,
-        paymentId: 'UPI_QR_' + Date.now(),
-        product: currentProduct.name,
-        amount: parseFloat(window.currentQROrder.amount),
-        customerDetails: window.currentQROrder.customerDetails,
-        timestamp: new Date().toISOString(),
-        paymentMethod: 'UPI QR Code'
-    };
-    
-    console.log('✅ QR Payment confirmed:', orderData);
-    
-    // Send to Google Sheets
-    sendWhatsAppNotifications(orderData);
-    
-    // Hide processing and show success
-    setTimeout(() => {
-        document.getElementById('processingIndicator').style.display = 'none';
-        hideQRCode();
-        showSuccessModal(orderData.orderId, 'qr', orderData.customerDetails);
-    }, 2000);
-}
-
-// Process payment (Razorpay Gateway)
+// Process payment (Razorpay with UPI Priority)
 function processPayment() {
     const form = document.getElementById('paymentForm');
     const nameInput = document.getElementById('customerName');
@@ -709,7 +564,7 @@ function processPayment() {
     initiateRazorpayPayment(customerDetails);
 }
 
-// Initialize Razorpay payment
+// Initialize Razorpay payment with UPI as default
 function initiateRazorpayPayment(customerDetails) {
     const amount = currentOrderDetails.total * 100;
     
@@ -721,6 +576,7 @@ function initiateRazorpayPayment(customerDetails) {
         description: `Order for ${currentProduct.name}`,
         image: CONFIG.businessLogo,
         handler: function(response) {
+            // Payment verified by Razorpay - Now process order
             handlePaymentSuccess(response, customerDetails);
         },
         prefill: {
@@ -742,6 +598,25 @@ function initiateRazorpayPayment(customerDetails) {
             ondismiss: function() {
                 console.log('Payment cancelled by user');
             }
+        },
+        // Show UPI as first option
+        config: {
+            display: {
+                blocks: {
+                    banks: {
+                        name: 'Pay using UPI',
+                        instruments: [
+                            {
+                                method: 'upi'
+                            }
+                        ]
+                    }
+                },
+                sequence: ['block.banks'],
+                preferences: {
+                    show_default_blocks: true
+                }
+            }
         }
     };
     
@@ -759,7 +634,7 @@ function initiateRazorpayPayment(customerDetails) {
     }
 }
 
-// Handle successful payment
+// Handle successful payment (ONLY called after Razorpay verification)
 function handlePaymentSuccess(response, customerDetails) {
     document.getElementById('processingIndicator').style.display = 'block';
     
@@ -775,8 +650,9 @@ function handlePaymentSuccess(response, customerDetails) {
         paymentMethod: 'Online Payment (Razorpay)'
     };
     
-    console.log('Order successful:', orderData);
+    console.log('✅ Payment verified by Razorpay:', orderData);
     
+    // Send to Google Sheets ONLY after payment is verified
     sendWhatsAppNotifications(orderData);
     
     setTimeout(() => {
@@ -792,7 +668,7 @@ function sendWhatsAppNotifications(orderData) {
                    `${currentOrderDetails.weight}g`;
     const quantity = currentOrderDetails.quantity;
     
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbyCrSuS1dFafnTkXjW-nCcF_tsMEbFpRXSMKAb65ZmM_4_nhOHRuB3Ho0mH9s0c4Cih/exec';
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbykBg2S8bAVejZQxTZT-2nK3XiFkHAAh7EgM0hNSkghRa9-tXDnNsgj07fC2WG3ykRp/exec';
     
     fetch(webhookUrl, {
         method: 'POST',
@@ -830,14 +706,8 @@ function showSuccessModal(orderId, paymentType, customerDetails) {
     document.getElementById('confirmedPhone').textContent = '+91 ' + customerDetails.phone;
     
     const successModal = document.getElementById('successModal');
-    
-    if (paymentType === 'qr') {
-        successModal.querySelector('h3').textContent = '✅ Order Placed Successfully!';
-        successModal.querySelector('.lead').textContent = 'Your UPI payment has been received and order is confirmed.';
-    } else {
-        successModal.querySelector('h3').textContent = '✅ Payment Successful!';
-        successModal.querySelector('.lead').textContent = 'Your payment has been received and order is confirmed.';
-    }
+    successModal.querySelector('h3').textContent = '✅ Payment Successful!';
+    successModal.querySelector('.lead').textContent = 'Your payment has been verified and order is confirmed.';
     
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('successModal').style.display = 'block';
@@ -851,9 +721,6 @@ function closeModal() {
     
     document.getElementById('paymentForm').reset();
     document.getElementById('deliveryPin').value = currentUserPin;
-    
-    // Clear QR order
-    window.currentQROrder = null;
 }
 
 // Initialize when DOM is ready
@@ -869,8 +736,5 @@ window.increaseQuantity = increaseQuantity;
 window.decreaseQuantity = decreaseQuantity;
 window.proceedToPayment = proceedToPayment;
 window.processPayment = processPayment;
-window.generatePaymentQR = generatePaymentQR;
-window.hideQRCode = hideQRCode;
-window.confirmQRPayment = confirmQRPayment;
 window.closeModal = closeModal;
 window.backToDetail = backToDetail;
