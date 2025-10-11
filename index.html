@@ -99,7 +99,7 @@
                     <span class="badge bg-white text-primary p-2"><i class="fas fa-truck"></i> Fast Delivery</span>
                     <span class="badge bg-white text-primary p-2"><i class="fas fa-certificate"></i> Quality Guaranteed</span>
                     <span class="badge bg-white text-primary p-2"><i class="fas fa-clock"></i> Fresh Daily</span>
-                    <span class="badge bg-white text-primary p-2"><i class="fab fa-whatsapp"></i> WhatsApp Updates</span>
+                    <span class="badge bg-white text-primary p-2"><i class="fas fa-credit-card"></i> Secure Payment</span>
                 </div>
             </div>
         </div>
@@ -348,7 +348,7 @@
                                     <span class="input-group-text">+91</span>
                                     <input type="tel" class="form-control" id="customerPhone" placeholder="9876543210" pattern="[0-9]{10}" maxlength="10" required>
                                 </div>
-                                <small class="text-muted">You'll receive WhatsApp updates on this number</small>
+                                <small class="text-muted">Order confirmation will be sent to this number</small>
                             </div>
                             
                             <h5 class="mt-4 mb-3"><i class="fas fa-map-marked-alt"></i> Delivery Address</h5>
@@ -370,45 +370,26 @@
                 </div>
                 <div class="col-md-6">
                     <div class="qr-container">
-                        <h4 class="mb-3"><i class="fas fa-receipt"></i> Payment Details</h4>
+                        <h4 class="mb-3"><i class="fas fa-receipt"></i> Order Summary</h4>
                         <div class="alert alert-info">
-                            <h5>Order Summary</h5>
+                            <h5>Your Order</h5>
                             <p id="orderSummary">Product details will appear here</p>
                             <hr>
                             <h4 class="text-primary">Total Amount: <span id="finalAmount">₹0</span></h4>
                         </div>
                         
-                        <!-- Notification Info -->
-                        <div class="notification-info mb-3">
-                            <div class="alert alert-success">
-                                <h6><i class="fab fa-whatsapp"></i> You'll Receive:</h6>
-                                <ul class="mb-0 small">
-                                    <li><i class="fab fa-whatsapp text-success"></i> Order confirmation via WhatsApp</li>
-                                    <li><i class="fab fa-whatsapp text-success"></i> Delivery updates via WhatsApp</li>
-                                    <li><i class="fas fa-receipt text-warning"></i> Order details on WhatsApp</li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <!-- Payment Options -->
+                        <!-- Payment Method (Online Only) -->
                         <div class="payment-options mb-4">
-                            <h5 class="mb-3">Select Payment Method</h5>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="paymentMethod" id="onlinePayment" value="online" checked>
-                                <label class="form-check-label" for="onlinePayment">
-                                    <i class="fas fa-credit-card text-primary"></i> Online Payment (Cards/UPI/NetBanking)
-                                </label>
-                            </div>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="paymentMethod" id="codPayment" value="cod">
-                                <label class="form-check-label" for="codPayment">
-                                    <i class="fas fa-money-bill-wave text-success"></i> Cash on Delivery
-                                </label>
+                            <h5 class="mb-3">Payment Method</h5>
+                            <div class="alert alert-primary">
+                                <i class="fas fa-credit-card"></i> <strong>Online Payment Only</strong>
+                                <br>
+                                <small>We accept Cards, UPI, Net Banking & Digital Wallets</small>
                             </div>
                         </div>
                         
                         <!-- Online Payment Info -->
-                        <div id="onlinePaymentInfo" class="payment-method-info">
+                        <div class="payment-method-info">
                             <div class="text-center mb-3">
                                 <img src="https://i.imgur.com/YJmFbMw.png" alt="Razorpay" style="height: 40px;" class="mb-2">
                                 <p class="text-muted small">Secure Payment Gateway</p>
@@ -424,17 +405,8 @@
                             </p>
                         </div>
                         
-                        <!-- COD Info -->
-                        <div id="codPaymentInfo" class="payment-method-info" style="display: none;">
-                            <div class="alert alert-warning">
-                                <i class="fas fa-info-circle"></i> Cash on Delivery available
-                                <br>
-                                <small>Please keep exact change ready. WhatsApp message will be sent before delivery.</small>
-                            </div>
-                        </div>
-                        
                         <button class="btn btn-success btn-lg w-100" onclick="processPayment()">
-                            <i class="fas fa-lock"></i> Proceed to Pay <span id="payButtonAmount">₹0</span>
+                            <i class="fas fa-lock"></i> Pay Now <span id="payButtonAmount">₹0</span>
                         </button>
                         
                         <div class="text-center mt-3">
@@ -448,32 +420,28 @@
         </div>
     </div>
 
-    <!-- Success Modal with WhatsApp Confirmation -->
-    <!-- Success Modal with WhatsApp Confirmation -->
-<div class="overlay" id="overlay"></div>
-<div class="success-modal" id="successModal">
-    <div class="success-icon">
-        <i class="fas fa-check-circle"></i>
+    <!-- Success Modal -->
+    <div class="overlay" id="overlay"></div>
+    <div class="success-modal" id="successModal">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>Payment Successful!</h3>
+        <p class="lead mb-2">Your payment has been received and order is confirmed.</p>
+        <p class="mb-3">Order ID: <strong id="orderId">ORD123456</strong></p>
+        
+        <div class="alert alert-success text-start">
+            <h6><i class="fas fa-check-circle"></i> Order Confirmed!</h6>
+            <ul class="mb-0 small">
+                <li><i class="fas fa-phone text-success"></i> We'll contact you at: <span id="confirmedPhone"></span></li>
+                <li><i class="fas fa-truck text-primary"></i> Delivery: Tomorrow morning</li>
+                <li><i class="fas fa-envelope text-info"></i> Order details sent to your email</li>
+            </ul>
+        </div>
+        
+        <p class="text-muted small">Thank you for choosing Fresh Fish Market!</p>
+        <button class="btn btn-primary mt-3" onclick="closeModal()">Continue Shopping</button>
     </div>
-    <h3>Payment Successful!</h3>
-    <p class="lead mb-2">Your order has been placed successfully.</p>
-    <p class="mb-3">Order ID: <strong id="orderId">ORD123456</strong></p>
-    
-    <div class="alert alert-success text-start">
-        <h6><i class="fas fa-check-circle"></i> Order Confirmed!</h6>
-        <ul class="mb-0 small">
-            <li><i class="fab fa-whatsapp text-success"></i> WhatsApp confirmation ready for: <span id="confirmedPhone"></span></li>
-            <li><i class="fas fa-box text-primary"></i> Order details sent to admin</li>
-            <li><i class="fas fa-truck text-info"></i> Delivery: Tomorrow morning</li>
-        </ul>
-    </div>
-    
-    <div class="alert alert-info text-start small">
-        <i class="fas fa-info-circle"></i> <strong>Note:</strong> You will receive order confirmation on WhatsApp shortly. Please keep your phone nearby.
-    </div>
-    
-    <button class="btn btn-primary mt-3" onclick="closeModal()">Continue Shopping</button>
-</div>
 
     <!-- Not Available Modal -->
     <div class="success-modal" id="notAvailableModal" style="display: none;">
@@ -487,12 +455,12 @@
         <button class="btn btn-primary mt-3" onclick="retryPinCode()">Try Another PIN Code</button>
     </div>
 
-    <!-- WhatsApp Processing Indicator -->
+    <!-- Processing Indicator -->
     <div id="processingIndicator" class="processing-indicator" style="display: none;">
         <div class="spinner-border text-success" role="status">
             <span class="visually-hidden">Processing...</span>
         </div>
-        <p class="mt-2"><i class="fab fa-whatsapp"></i> Sending WhatsApp notifications...</p>
+        <p class="mt-2"><i class="fas fa-lock"></i> Processing your payment...</p>
     </div>
 
     <!-- Bootstrap JS -->
