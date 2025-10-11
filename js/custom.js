@@ -30,7 +30,7 @@ const products = [
     { 
         id: 1, 
         name: 'Rohu Fish', 
-        price: 280, 
+        price: 1, 
         description: 'Fresh water fish, rich in omega-3', 
         icon: '🐟',
         longDescription: 'Rohu is one of the most popular freshwater fish in Bengali cuisine. Known for its tender meat and mild flavor.',
