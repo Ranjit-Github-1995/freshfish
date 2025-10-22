@@ -758,7 +758,7 @@ function sendWhatsAppNotifications(orderData) {
     const quantity = currentOrderDetails.quantity;
     
     // Google Apps Script Web App URL
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbykBg2S8bAVejZQxTZT-2nK3XiFkHAAh7EgM0hNSkghRa9-tXDnNsgj07fC2WG3ykRp/exec'; // Paste the URL you copied
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbwq8YRK-O8Y1ZEYOb0NqZwIFGhP-idQ9EMtkBU99QpJJGQ7MqEjPiA6WsSUNrfWMEI/exec'; // Paste the URL you copied
     
     // Send order data to Google Sheets
     fetch(webhookUrl, {
