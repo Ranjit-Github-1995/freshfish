@@ -521,7 +521,7 @@ a { text-decoration: none; }
 .cart-item-remove:hover { background: rgba(239,68,68,.12); color: var(--danger); border-color: rgba(239,68,68,.3); }
 
 .cart-drawer-footer {
-    padding: 14px 14px;
+    padding: 14px;
     border-top: 1px solid var(--ocean-border);
     flex-shrink: 0;
     background: var(--ocean-card);
@@ -539,6 +539,20 @@ a { text-decoration: none; }
 .cart-subtotal strong { color: var(--gold); font-size: 1.2rem; font-weight: 800; }
 .cart-footer-note { display: none; }
 .btn-cart-shop { display: none; }
+.btn-cart-checkout {
+    width: 100%;
+    background: linear-gradient(135deg, #06d6a0, #0077b6);
+    border: none; color: #fff;
+    font-weight: 700; font-size: .9rem;
+    padding: 13px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center;
+    letter-spacing: .02em;
+}
+.btn-cart-checkout:hover {
+    opacity: .88; transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(6,214,160,.35);
+}
 
 /* ── PAYMENT PAGE ─────────────────────────────────────────── */
 .page-title { font-family: 'Playfair Display', serif; color: var(--white); font-weight: 900; font-size: 2rem; }

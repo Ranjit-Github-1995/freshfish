@@ -97,12 +97,13 @@
     </div>
     <div class="cart-drawer-footer" id="cartFooter" style="display:none;">
         <div class="cart-subtotal">
-            <span><i class="fas fa-receipt me-1"></i>Total</span>
+            <span><i class="fas fa-receipt me-1"></i>Total Amount</span>
             <strong id="cartSubtotal">₹0</strong>
         </div>
-        <p class="text-muted" style="font-size:.73rem;text-align:center;margin:4px 0 0;">
-            <i class="fas fa-info-circle me-1"></i>Select a product to checkout
-        </p>
+        <button class="btn-cart-checkout w-100 mt-2" onclick="cartCheckout()">
+            <i class="fas fa-lock me-2"></i>Proceed to Checkout
+            <i class="fas fa-arrow-right ms-2"></i>
+        </button>
     </div>
 </div>
 

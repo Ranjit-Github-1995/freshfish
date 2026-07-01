@@ -573,6 +573,57 @@ function closeModal() {
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
+// ─── CART CHECKOUT ────────────────────────────────────────
+// When user clicks "Proceed to Checkout" from cart drawer
+function cartCheckout() {
+    if (cartItems.length === 0) return;
+
+    // Use the last added item as the current order
+    const lastItem = cartItems[cartItems.length - 1];
+    const product  = products.find(p => p.name === lastItem.productName);
+    if (!product) {
+        alert('Please select a product to checkout.');
+        closeCart();
+        showMainPage();
+        return;
+    }
+
+    // Parse weight from string like "500g" or "1kg"
+    let weightGrams = 500;
+    if (lastItem.weight.includes('kg')) {
+        weightGrams = parseFloat(lastItem.weight) * 1000;
+    } else {
+        weightGrams = parseInt(lastItem.weight);
+    }
+
+    // Set currentProduct & currentOrderDetails so payment page works
+    currentProduct = product;
+    const quantity  = lastItem.quantity;
+    const total     = lastItem.price;
+    currentOrderDetails = { product, weight: weightGrams, quantity, total };
+
+    const weightText = weightGrams >= 1000 ? `${weightGrams/1000}kg` : `${weightGrams}g`;
+
+    closeCart();
+
+    // Show payment page
+    document.getElementById('detailPage').style.display  = 'none';
+    document.getElementById('mainPage').style.display    = 'none';
+    document.getElementById('paymentPage').style.display = 'block';
+
+    document.getElementById('orderProductIcon').textContent = product.icon;
+    document.getElementById('orderSummary').innerHTML = `
+        <strong>${product.name}</strong>
+        <div style="margin-top:4px;color:var(--text-muted);font-size:.85rem;">
+            ${quantity} × ${weightText} &nbsp;·&nbsp; ₹${product.price}/kg
+        </div>`;
+    document.getElementById('finalAmount').textContent     = '₹' + total.toFixed(2);
+    document.getElementById('payButtonAmount').textContent = '₹' + total.toFixed(2);
+    document.getElementById('deliveryPin').value = currentUserPin;
+
+    window.scrollTo(0, 0);
+}
+
 // ─── BACK FROM DETAIL ─────────────────────────────────────
 // Called by the "Back to Products" button on detail page
 function goBackFromDetail() {
@@ -631,3 +682,4 @@ window.closeCart        = closeCart;
 window.removeCartItem   = removeCartItem;
 window.goBackFromDetail = goBackFromDetail;
 window.quickAddToCart   = quickAddToCart;
+window.cartCheckout     = cartCheckout;
