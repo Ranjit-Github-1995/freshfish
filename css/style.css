@@ -615,3 +615,69 @@ body {
     width: 90%;
     animation: slideIn 0.3s ease;
 }
+
+/* ── Stock Management Styles ─────────────────────────────────────────────────── */
+
+/* Out of Stock badge — replaces "Fresh Daily" when stock = 0 */
+.badge-out-of-stock {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ef4444;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    z-index: 1;
+}
+
+/* Low Stock warning badge — shows when ≤ 2 kg remaining */
+.badge-low-stock {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #f59e0b;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: bold;
+    z-index: 1;
+    animation: lowStockPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes lowStockPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+    50%       { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+}
+
+/* Dimmed card when product is out of stock */
+.card-out-of-stock {
+    opacity: 0.72;
+    filter: grayscale(40%);
+    pointer-events: none;
+    border: 2px solid rgba(239, 68, 68, 0.35) !important;
+}
+
+/* Disabled "Out of Stock" button */
+.btn-out-of-stock {
+    background: #e5e7eb;
+    border: none;
+    color: #9ca3af;
+    border-radius: 25px;
+    padding: 8px 20px;
+    cursor: not-allowed;
+    font-weight: 600;
+    width: 100%;
+}
+
+/* Responsive tweaks for stock badges on small screens */
+@media (max-width: 768px) {
+    .badge-out-of-stock,
+    .badge-low-stock,
+    .badge-fresh {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+    }
+}
