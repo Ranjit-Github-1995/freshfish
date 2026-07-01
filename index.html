@@ -4,25 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fresh Fish Market - Premium Quality Fish Delivery</title>
-
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<!-- PIN Code Verification Modal -->
+<!-- PIN Modal -->
 <div class="pin-modal" id="pinModal">
     <div class="pin-modal-content">
         <div class="pin-icon-wrap">
-            <div class="pin-icon-circle">
-                <i class="fas fa-map-marker-alt"></i>
-            </div>
+            <div class="pin-icon-circle"><i class="fas fa-map-marker-alt"></i></div>
         </div>
         <h3>Check Delivery Area</h3>
         <p class="text-muted">Enter your PIN code to see if we deliver to you</p>
@@ -37,21 +30,20 @@
     </div>
 </div>
 
-<!-- Delivery Banner (after 2 PM) -->
+<!-- ① CLEAN BANNER — fixed ticker, no bounce icons cluttering it -->
 <div class="delivery-banner" id="deliveryBanner">
-    <div class="delivery-banner-text">
-        <i class="fas fa-truck bounce-icon"></i>
-        🐟 All orders freshly delivered tomorrow morning!
-        <i class="fas fa-clock bounce-icon"></i>
-        Order now for next-day delivery!
-        <i class="fas fa-fish bounce-icon"></i>
-        Fresh fish guaranteed daily!
-        <i class="fas fa-truck bounce-icon"></i>
-        🐟 All orders freshly delivered tomorrow morning!
+    <div class="banner-inner">
+        <span class="banner-icon">🚚</span>
+        <div class="banner-ticker-wrap">
+            <div class="banner-ticker">
+                Order now &nbsp;·&nbsp; Next-morning delivery guaranteed &nbsp;·&nbsp; 🐟 Fresh fish daily &nbsp;·&nbsp; Hygienic packaging &nbsp;·&nbsp; Order now &nbsp;·&nbsp; Next-morning delivery guaranteed &nbsp;·&nbsp; 🐟 Fresh fish daily &nbsp;·&nbsp; Hygienic packaging
+            </div>
+        </div>
+        <span class="banner-icon">🐟</span>
     </div>
 </div>
 
-<!-- Navigation -->
+<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark ffm-navbar" id="navbar">
     <div class="container">
         <a class="navbar-brand ffm-brand" href="#" onclick="showMainPage()">
@@ -68,8 +60,9 @@
                         <i class="fas fa-home"></i> Home
                     </a>
                 </li>
+                <!-- ② WORKING CART — triggers cart drawer -->
                 <li class="nav-item">
-                    <a class="nav-link ffm-nav-link position-relative" href="#">
+                    <a class="nav-link ffm-nav-link position-relative" href="#" onclick="openCart(); return false;">
                         <i class="fas fa-shopping-basket"></i> Cart
                         <span class="cart-badge" id="cartCount">0</span>
                     </a>
@@ -85,10 +78,33 @@
     </div>
 </nav>
 
-<!-- ══════════════════════════════════════════════ MAIN PAGE -->
-<div id="mainPage" style="display:none;">
+<!-- ② CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+    <div class="cart-drawer-header">
+        <h5><i class="fas fa-shopping-basket"></i> Your Cart</h5>
+        <button class="cart-close-btn" onclick="closeCart()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cart-drawer-body" id="cartDrawerBody">
+        <div class="cart-empty" id="cartEmpty">
+            <div style="font-size:3rem">🛒</div>
+            <p>Your cart is empty</p>
+            <small class="text-muted">Add fish products to get started</small>
+        </div>
+        <div id="cartItemsList"></div>
+    </div>
+    <div class="cart-drawer-footer" id="cartFooter" style="display:none;">
+        <div class="cart-subtotal">
+            Subtotal: <strong id="cartSubtotal">₹0</strong>
+        </div>
+        <button class="btn btn-buy w-100 mt-3" onclick="closeCart(); showMainPage();">
+            <i class="fas fa-plus"></i> Add More Items
+        </button>
+    </div>
+</div>
 
-    <!-- Hero -->
+<!-- MAIN PAGE -->
+<div id="mainPage" style="display:none;">
     <section class="ffm-hero">
         <div class="hero-bg-bubbles">
             <span></span><span></span><span></span><span></span><span></span>
@@ -111,7 +127,6 @@
         </div>
     </section>
 
-    <!-- Products -->
     <section class="ffm-products">
         <div class="container">
             <div class="section-header text-center mb-5">
@@ -123,7 +138,6 @@
         </div>
     </section>
 
-    <!-- Trust Strip -->
     <section class="ffm-trust">
         <div class="container">
             <div class="trust-grid">
@@ -146,10 +160,9 @@
             </div>
         </div>
     </section>
-
 </div>
 
-<!-- ══════════════════════════════════════════════ DETAIL PAGE -->
+<!-- DETAIL PAGE -->
 <div id="detailPage" style="display:none;">
     <div class="container py-5">
         <button class="btn btn-back mb-4" onclick="showMainPage()">
@@ -158,15 +171,12 @@
         <div class="detail-card">
             <div class="row g-0">
                 <div class="col-md-5">
-                    <div class="detail-image-wrap" id="detailImage">
-                        <i class="fas fa-fish"></i>
-                    </div>
+                    <div class="detail-image-wrap" id="detailImage"></div>
                 </div>
                 <div class="col-md-7 detail-info">
-                    <h2 class="detail-name" id="detailName">Fish Name</h2>
-                    <p class="detail-desc text-muted" id="detailDescription">Description</p>
+                    <h2 class="detail-name" id="detailName"></h2>
+                    <p class="detail-desc text-muted" id="detailDescription"></p>
                     <div class="detail-price" id="detailPrice">₹0 <span>per kg</span></div>
-
                     <div class="mb-4">
                         <label class="detail-label">Select Weight</label>
                         <div class="btn-group weight-group" role="group">
@@ -178,7 +188,6 @@
                             <label class="btn btn-weight" for="weight1000">1 kg</label>
                         </div>
                     </div>
-
                     <div class="mb-4">
                         <label class="detail-label">Quantity</label>
                         <div class="qty-selector">
@@ -187,15 +196,10 @@
                             <button class="qty-btn" onclick="increaseQuantity()">+</button>
                         </div>
                     </div>
-
-                    <div class="detail-total">
-                        Total: <strong id="totalPrice">₹0</strong>
-                    </div>
-
+                    <div class="detail-total">Total: <strong id="totalPrice">₹0</strong></div>
                     <button class="btn btn-buy w-100 mt-3" onclick="proceedToPayment()">
                         <i class="fas fa-shopping-bag"></i> Proceed to Buy
                     </button>
-
                     <div class="detail-features mt-4">
                         <span><i class="fas fa-check-circle text-success"></i> 100% Fresh</span>
                         <span><i class="fas fa-check-circle text-success"></i> Daily Stock</span>
@@ -204,35 +208,19 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Tabs -->
             <div class="detail-tabs-wrap">
                 <ul class="nav nav-tabs ffm-tabs" id="productInfoTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button">Description</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#nutrition" type="button">Nutrition</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cooking" type="button">Cooking Tips</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#storage" type="button">Storage</button>
-                    </li>
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button">Description</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#nutrition" type="button">Nutrition</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#cooking" type="button">Cooking Tips</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#storage" type="button">Storage</button></li>
                 </ul>
-                <div class="tab-content ffm-tab-content" id="productInfoTabContent">
+                <div class="tab-content ffm-tab-content">
                     <div class="tab-pane fade show active" id="description" role="tabpanel">
                         <p id="detailLongDescription"></p>
                         <div class="row mt-3">
-                            <div class="col-md-6">
-                                <h6 class="tab-subhead">Origin & Source</h6>
-                                <p id="detailOrigin" class="text-muted"></p>
-                            </div>
-                            <div class="col-md-6">
-                                <h6 class="tab-subhead">Best For</h6>
-                                <p id="detailBestFor" class="text-muted"></p>
-                            </div>
+                            <div class="col-md-6"><h6 class="tab-subhead">Origin & Source</h6><p id="detailOrigin" class="text-muted"></p></div>
+                            <div class="col-md-6"><h6 class="tab-subhead">Best For</h6><p id="detailBestFor" class="text-muted"></p></div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="nutrition" role="tabpanel">
@@ -257,20 +245,8 @@
                     </div>
                     <div class="tab-pane fade" id="storage" role="tabpanel">
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <div class="storage-card p-3 border rounded">
-                                    <h6><i class="fas fa-snowflake text-info"></i> Refrigeration</h6>
-                                    <p>Store at 0–4°C for up to 2 days</p>
-                                    <small class="text-muted">Coldest part of your fridge</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="storage-card p-3 border rounded">
-                                    <h6><i class="fas fa-igloo text-primary"></i> Freezing</h6>
-                                    <p>Freeze at −18°C for up to 3 months</p>
-                                    <small class="text-muted">Wrap tightly in freezer bags</small>
-                                </div>
-                            </div>
+                            <div class="col-md-6 mb-3"><div class="storage-card p-3 border rounded"><h6><i class="fas fa-snowflake text-info"></i> Refrigeration</h6><p>Store at 0–4°C for up to 2 days</p><small class="text-muted">Coldest part of your fridge</small></div></div>
+                            <div class="col-md-6 mb-3"><div class="storage-card p-3 border rounded"><h6><i class="fas fa-igloo text-primary"></i> Freezing</h6><p>Freeze at −18°C for up to 3 months</p><small class="text-muted">Wrap tightly in freezer bags</small></div></div>
                         </div>
                         <div class="alert alert-info mt-2"><ul class="mb-0"><li>Use airtight container</li><li>Never refreeze thawed fish</li><li>Check for off odors before cooking</li></ul></div>
                     </div>
@@ -280,7 +256,7 @@
     </div>
 </div>
 
-<!-- ══════════════════════════════════════════════ PAYMENT PAGE -->
+<!-- PAYMENT PAGE — ④ Removed "Recommended" UPI box -->
 <div id="paymentPage" style="display:none;">
     <div class="container py-5">
         <button class="btn btn-back mb-4" onclick="backToDetail()">
@@ -302,7 +278,7 @@
                                 <span class="input-group-text ffm-input-prefix">+91</span>
                                 <input type="tel" class="form-control ffm-input" id="customerPhone" placeholder="9876543210" maxlength="10" required>
                             </div>
-                            <small class="text-muted">Confirmation sent to this number</small>
+                            <small class="text-muted">Order bill sent to this WhatsApp number</small>
                         </div>
                         <h5 class="pay-card-title mt-4"><i class="fas fa-map-marked-alt"></i> Delivery Address</h5>
                         <div class="mb-3">
@@ -324,37 +300,20 @@
                 <div class="pay-card">
                     <h4 class="pay-card-title"><i class="fas fa-receipt"></i> Order Summary</h4>
                     <div class="order-summary-box">
-                        <p id="orderSummary" class="mb-2">Product details will appear here</p>
+                        <p id="orderSummary" class="mb-2"></p>
                         <div class="order-total">Total: <strong id="finalAmount">₹0</strong></div>
                     </div>
 
-                    <div class="upi-highlight-box mt-4">
-                        <div class="upi-rec-label">⭐ Recommended</div>
-                        <div class="d-flex align-items-center gap-3">
-                            <span style="font-size:2.5rem">📱</span>
-                            <div>
-                                <strong>Pay with UPI</strong>
-                                <p class="mb-0 small text-muted">GPay · PhonePe · Paytm · BHIM</p>
-                            </div>
+                    <!-- Payment icons only, no "Recommended" label -->
+                    <div class="payment-icons-row mt-4">
+                        <span class="pay-icon-label">Accepted payments</span>
+                        <div class="pay-icons-list">
+                            <span class="pay-icon-pill">📱 UPI</span>
+                            <i class="fab fa-cc-visa fa-xl text-primary"></i>
+                            <i class="fab fa-cc-mastercard fa-xl text-danger"></i>
+                            <i class="fas fa-university fa-xl text-secondary"></i>
+                            <i class="fas fa-wallet fa-xl text-warning"></i>
                         </div>
-                    </div>
-
-                    <div class="also-accepts mt-3 text-center">
-                        <small class="text-muted d-block mb-2">Also accepts:</small>
-                        <i class="fab fa-cc-visa fa-2x mx-2 text-primary"></i>
-                        <i class="fab fa-cc-mastercard fa-2x mx-2 text-danger"></i>
-                        <i class="fas fa-university fa-2x mx-2 text-secondary"></i>
-                        <i class="fas fa-wallet fa-2x mx-2 text-warning"></i>
-                    </div>
-
-                    <div class="how-upi mt-4">
-                        <strong><i class="fas fa-info-circle"></i> How it works:</strong>
-                        <ol class="mt-2 mb-0 ps-3 small">
-                            <li>Click "Pay Now" below</li>
-                            <li>Razorpay window opens</li>
-                            <li>Choose UPI & scan QR</li>
-                            <li>Payment confirmed instantly ✅</li>
-                        </ol>
                     </div>
 
                     <button class="btn btn-pay w-100 mt-4" onclick="processPayment()">
@@ -363,16 +322,21 @@
                     <div class="secure-note text-center mt-3">
                         <small><i class="fas fa-shield-alt text-success"></i> 100% Secure · Encrypted by Razorpay</small>
                     </div>
+
+                    <!-- ⑤ WhatsApp bill note -->
+                    <div class="whatsapp-note mt-3">
+                        <i class="fab fa-whatsapp"></i>
+                        Your order bill will be sent to your WhatsApp after payment
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Overlay -->
 <div class="overlay" id="overlay"></div>
 
-<!-- Success Modal -->
+<!-- ③ SUCCESS MODAL — removed email line -->
 <div class="ffm-modal" id="successModal">
     <div class="ffm-modal-icon success-icon"><i class="fas fa-check-circle"></i></div>
     <h3>Payment Successful!</h3>
@@ -380,12 +344,12 @@
     <p class="mb-3">Order ID: <strong id="orderId">ORD123456</strong></p>
     <div class="modal-info-box">
         <ul class="mb-0 small">
-            <li><i class="fas fa-phone text-success"></i> We'll call: <span id="confirmedPhone"></span></li>
+            <li><i class="fab fa-whatsapp text-success"></i> Bill sent to WhatsApp: <span id="confirmedPhone"></span></li>
             <li><i class="fas fa-truck text-primary"></i> Delivery: Tomorrow morning</li>
-            <li><i class="fas fa-envelope text-info"></i> Details sent to your email</li>
+            <li><i class="fas fa-clock text-warning"></i> Our team will confirm shortly</li>
         </ul>
     </div>
-    <p class="text-muted small mt-3">Thank you for choosing Fresh Fish Market!</p>
+    <p class="text-muted small mt-3">Thank you for choosing Fresh Fish Market! 🐟</p>
     <button class="btn btn-buy mt-2" onclick="closeModal()">Continue Shopping</button>
 </div>
 
@@ -405,11 +369,8 @@
     <p class="mt-3 mb-0"><i class="fas fa-lock"></i> Processing your payment…</p>
 </div>
 
-<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Razorpay -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<!-- Custom JS -->
 <script src="js/custom.js"></script>
 </body>
 </html>
