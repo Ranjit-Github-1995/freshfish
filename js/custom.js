@@ -95,6 +95,10 @@ function checkTimeAndShowBanner() {
     const show = new Date().getHours() >= CONFIG.bannerStartHour;
     document.getElementById('deliveryBanner').style.display = show ? 'flex' : 'none';
     document.getElementById('navbar').classList.toggle('with-banner', show);
+    // Adjust cart drawer top to stay below navbar
+    const navbar = document.getElementById('navbar');
+    const navH = navbar.offsetHeight + (show ? 28 : 0);
+    document.getElementById('cartDrawer').style.top = navH + 'px';
 }
 
 // ─── EVENT LISTENERS ──────────────────────────────────────────────────────────
@@ -207,13 +211,10 @@ function createProductCard(product) {
 function openCart() {
     renderCartDrawer();
     document.getElementById('cartDrawer').classList.add('open');
-    document.getElementById('cartOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    // No overlay, no body lock — user can still scroll and click products
 }
 function closeCart() {
     document.getElementById('cartDrawer').classList.remove('open');
-    document.getElementById('cartOverlay').classList.remove('open');
-    document.body.style.overflow = '';
 }
 function renderCartDrawer() {
     const listEl   = document.getElementById('cartItemsList');
