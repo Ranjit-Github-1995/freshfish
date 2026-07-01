@@ -179,14 +179,46 @@ function createProductCard(product) {
             ? `<div class="badge-low-stock"><i class="fas fa-exclamation-triangle me-1"></i>Only ${stockLeft.toFixed(1)}kg left!</div>`
             : `<div class="badge-fresh"><i class="fas fa-leaf me-1"></i>Fresh Daily</div>`;
 
-    const actions = outOfStock
-        ? `<div class="product-actions"><button class="btn-out-of-stock" disabled><i class="fas fa-times-circle me-1"></i>Out of Stock</button></div>`
-        : `<div class="product-actions">
-               <button class="btn-view-detail" onclick="showDetail(${product.id})">
-                   <i class="fas fa-eye"></i> View
-               </button>
-               <button class="btn-add-cart" onclick="quickAddToCart(${product.id})">
-                   <i class="fas fa-cart-plus"></i> Add to Cart
+    // Default price for 500g
+    const defaultPrice = (product.price * 0.5).toFixed(2);
+
+    const body = outOfStock
+        ? `<div class="product-body">
+               <div class="product-name">${product.name}</div>
+               <div class="product-desc">${product.description}</div>
+               <div class="price-tag"><i class="fas fa-tag me-1"></i>₹${product.price} <small>per kg</small></div>
+               <button class="btn-out-of-stock" disabled><i class="fas fa-times-circle me-1"></i>Out of Stock</button>
+           </div>`
+        : `<div class="product-body">
+               <div class="product-name">${product.name}</div>
+               <div class="product-desc">${product.description}</div>
+
+               <div class="card-rate-label"><i class="fas fa-tag me-1"></i>₹${product.price}/kg</div>
+
+               <div class="card-weight-selector">
+                   <label class="card-weight-label">Select Weight</label>
+                   <div class="card-weight-btns" role="group">
+                       <input type="radio" name="weight_${product.id}" id="w${product.id}_500" value="500" checked
+                              onchange="updateCardPrice(${product.id}, 500, ${product.price})">
+                       <label class="card-w-btn" for="w${product.id}_500">500g</label>
+
+                       <input type="radio" name="weight_${product.id}" id="w${product.id}_750" value="750"
+                              onchange="updateCardPrice(${product.id}, 750, ${product.price})">
+                       <label class="card-w-btn" for="w${product.id}_750">750g</label>
+
+                       <input type="radio" name="weight_${product.id}" id="w${product.id}_1000" value="1000"
+                              onchange="updateCardPrice(${product.id}, 1000, ${product.price})">
+                       <label class="card-w-btn" for="w${product.id}_1000">1 kg</label>
+                   </div>
+               </div>
+
+               <div class="card-price-row">
+                   <span class="card-total-label">Total</span>
+                   <span class="card-total-price" id="card_price_${product.id}">₹${defaultPrice}</span>
+               </div>
+
+               <button class="btn-buy-now w-100" onclick="buyNowFromCard(${product.id})">
+                   <i class="fas fa-bolt me-2"></i>Buy Now
                </button>
            </div>`;
 
@@ -197,14 +229,69 @@ function createProductCard(product) {
                 <div class="product-image-wrap">
                     <span class="product-emoji">${product.icon}</span>
                 </div>
-                <div class="product-body">
-                    <div class="product-name">${product.name}</div>
-                    <div class="product-desc">${product.description}</div>
-                    <div class="price-tag"><i class="fas fa-tag me-1"></i>₹${product.price} <small>per kg</small></div>
-                    ${actions}
-                </div>
+                ${body}
             </div>
         </div>`;
+}
+
+// Update price display on card when weight changes
+function updateCardPrice(productId, weightGrams, pricePerKg) {
+    const total = pricePerKg * (weightGrams / 1000);
+    const el = document.getElementById('card_price_' + productId);
+    if (el) el.textContent = '₹' + total.toFixed(2);
+}
+
+// Buy directly from card — reads selected weight, goes to payment page
+function buyNowFromCard(productId) {
+    if (isOutOfStock(productId)) {
+        alert('Sorry! This product is out of stock for today.');
+        return;
+    }
+
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    // Get selected weight from card radio buttons
+    const selected = document.querySelector(`input[name="weight_${productId}"]:checked`);
+    const weight   = selected ? parseInt(selected.value) : 500;
+    const quantity = 1;
+    const soldKg   = (weight / 1000) * quantity;
+    const stockLeft = getStock(productId);
+
+    if (soldKg > stockLeft) {
+        alert(`Only ${stockLeft.toFixed(1)} kg available today.`);
+        return;
+    }
+
+    const total      = product.price * (weight / 1000) * quantity;
+    const weightText = weight >= 1000 ? `${weight/1000}kg` : `${weight}g`;
+
+    currentProduct      = product;
+    currentOrderDetails = { product, weight, quantity, total };
+
+    // Add to cart too
+    cartItems.push({ productName: product.name, icon: product.icon, quantity, weight: weightText, price: total });
+    cartCount = cartItems.length;
+    document.getElementById('cartCount').textContent      = cartCount;
+    document.getElementById('cartCountBadge').textContent = cartCount;
+
+    // Go directly to payment page
+    document.getElementById('mainPage').style.display    = 'none';
+    document.getElementById('detailPage').style.display  = 'none';
+    document.getElementById('paymentPage').style.display = 'block';
+
+    document.getElementById('orderProductIcon').textContent = product.icon;
+    document.getElementById('orderSummary').innerHTML = `
+        <strong>${product.name}</strong>
+        <div style="margin-top:4px;color:var(--text-muted);font-size:.85rem;">
+            ${quantity} × ${weightText} &nbsp;·&nbsp; ₹${product.price}/kg
+        </div>`;
+    document.getElementById('finalAmount').textContent     = '₹' + total.toFixed(2);
+    document.getElementById('payButtonAmount').textContent = '₹' + total.toFixed(2);
+    document.getElementById('deliveryPin').value = currentUserPin;
+
+    window.scrollTo(0, 0);
+    history.pushState({ page: 'payment' }, '', window.location.pathname);
 }
 
 // ─── CART DRAWER ──────────────────────────────────────────────────────────────
@@ -683,3 +770,5 @@ window.removeCartItem   = removeCartItem;
 window.goBackFromDetail = goBackFromDetail;
 window.quickAddToCart   = quickAddToCart;
 window.cartCheckout     = cartCheckout;
+window.buyNowFromCard   = buyNowFromCard;
+window.updateCardPrice  = updateCardPrice;
