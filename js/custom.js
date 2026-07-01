@@ -331,8 +331,8 @@ function addToCartFromCard(productId) {
     // Always re-render immediately
     renderCartDrawer();
 
-    // Show toast
-    showCartToast(product.icon, product.name, weightText, total);
+    // Open cart drawer so user sees their item
+    openCart();
 }
 
 // Buy Now — goes straight to payment page
