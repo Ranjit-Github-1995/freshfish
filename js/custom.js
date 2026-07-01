@@ -280,15 +280,16 @@ function addToCartFromCard(productId) {
 
     cartItems.push({ productName: product.name, icon: product.icon, quantity: 1, weight: weightText, price: total });
     cartCount = cartItems.length;
-    document.getElementById('cartCount').textContent      = cartCount;
-    document.getElementById('cartCountBadge').textContent = cartCount;
 
-    // If cart drawer is open, re-render it immediately so item shows without close/reopen
-    if (document.getElementById('cartDrawer').classList.contains('open')) {
-        renderCartDrawer();
-    }
+    // Update all badges
+    document.getElementById('cartCount').textContent = cartCount;
+    const badge = document.getElementById('cartCountBadge');
+    if (badge) badge.textContent = cartCount;
 
-    // Show mini toast — stays on main page
+    // Always re-render cart drawer immediately — whether open or closed
+    renderCartDrawer();
+
+    // Show mini toast
     showCartToast(product.icon, product.name, weightText, total);
 }
 
@@ -374,39 +375,48 @@ function renderCartDrawer() {
     const emptyEl  = document.getElementById('cartEmpty');
     const footerEl = document.getElementById('cartFooter');
     const subEl    = document.getElementById('cartSubtotal');
-    document.getElementById('cartCountBadge').textContent = cartItems.length;
+    const badgeEl  = document.getElementById('cartCountBadge');
 
+    if (badgeEl) badgeEl.textContent = cartItems.length;
+
+    // Always rebuild the list from scratch
     listEl.innerHTML = '';
+
     if (cartItems.length === 0) {
         emptyEl.style.display  = 'block';
         footerEl.style.display = 'none';
         return;
     }
+
     emptyEl.style.display  = 'none';
     footerEl.style.display = 'block';
 
     let subtotal = 0;
     cartItems.forEach((item, idx) => {
         subtotal += item.price;
-        listEl.innerHTML += `
-            <div class="cart-item">
-                <div class="cart-item-icon">${item.icon}</div>
-                <div class="cart-item-info">
-                    <div class="cart-item-name">${item.productName}</div>
-                    <div class="cart-item-meta">${item.quantity} × ${item.weight}</div>
-                </div>
-                <div class="cart-item-price">₹${item.price.toFixed(2)}</div>
-                <button class="cart-item-remove" onclick="removeCartItem(${idx})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>`;
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+            <div class="cart-item-icon">${item.icon}</div>
+            <div class="cart-item-info">
+                <div class="cart-item-name">${item.productName}</div>
+                <div class="cart-item-meta">${item.quantity} × ${item.weight}</div>
+            </div>
+            <div class="cart-item-price">₹${item.price.toFixed(2)}</div>
+            <button class="cart-item-remove" onclick="removeCartItem(${idx})">
+                <i class="fas fa-trash"></i>
+            </button>`;
+        listEl.appendChild(div);
     });
+
     subEl.textContent = '₹' + subtotal.toFixed(2);
 }
 function removeCartItem(idx) {
     cartItems.splice(idx, 1);
     cartCount = cartItems.length;
     document.getElementById('cartCount').textContent = cartCount;
+    const badge = document.getElementById('cartCountBadge');
+    if (badge) badge.textContent = cartCount;
     renderCartDrawer();
 }
 
