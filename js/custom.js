@@ -442,7 +442,7 @@ function handlePaymentSuccess(response, customerDetails) {
 // ─── ⑤ WHATSAPP BILL TO CUSTOMER ─────────────────────────────────────────────
 function sendWhatsAppBill(orderData) {
     const d = orderData;
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbykBg2S8bAVejZQxTZT-2nK3XiFkHAAh7EgM0hNSkghRa9-tXDnNsgj07fC2WG3ykRp/exec';
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbzkFxD11mVy2BK-jZ1hry0ZKy9we_pTTPcZqu8EQIN1KkK3Mz0ZbGVkRVxeeIoAAatz/exec';
 
     // Build a bill message — Google Apps Script will forward this to WhatsApp via Twilio/Wati
     const billMessage =
@@ -497,7 +497,7 @@ Thank you, ${d.customerDetails.name}! 🙏`;
 // ─── ⑤ ADMIN EMAIL ────────────────────────────────────────────────────────────
 function sendAdminEmail(orderData) {
     const d = orderData;
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbykBg2S8bAVejZQxTZT-2nK3XiFkHAAh7EgM0hNSkghRa9-tXDnNsgj07fC2WG3ykRp/exec';
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbzkFxD11mVy2BK-jZ1hry0ZKy9we_pTTPcZqu8EQIN1KkK3Mz0ZbGVkRVxeeIoAAatz/exec';
 
     fetch(webhookUrl, {
         method: 'POST', mode: 'no-cors',
