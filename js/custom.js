@@ -157,7 +157,7 @@ function retryPinCode() {
 function changePinCode() {
     sessionStorage.removeItem(CONFIG.sessionStorageKey);
     currentUserPin = '';
-    ['mainPage','detailPage','paymentPage'].forEach(id => document.getElementById(id).style.display = 'none');
+    ['mainPage','paymentPage'].forEach(id => document.getElementById(id).style.display = 'none');
     retryPinCode();
 }
 
@@ -283,6 +283,11 @@ function addToCartFromCard(productId) {
     document.getElementById('cartCount').textContent      = cartCount;
     document.getElementById('cartCountBadge').textContent = cartCount;
 
+    // If cart drawer is open, re-render it immediately so item shows without close/reopen
+    if (document.getElementById('cartDrawer').classList.contains('open')) {
+        renderCartDrawer();
+    }
+
     // Show mini toast — stays on main page
     showCartToast(product.icon, product.name, weightText, total);
 }
@@ -315,7 +320,6 @@ function buyNowFromCard(productId) {
 
     // Show payment page directly
     document.getElementById('mainPage').style.display    = 'none';
-    document.getElementById('detailPage').style.display  = 'none';
     document.getElementById('paymentPage').style.display = 'block';
 
     document.getElementById('orderProductIcon').textContent = product.icon;
@@ -408,8 +412,7 @@ function removeCartItem(idx) {
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
 function showMainPage() {
-    document.getElementById('mainPage').style.display = 'block';
-    document.getElementById('detailPage').style.display = 'none';
+    document.getElementById('mainPage').style.display    = 'block';
     document.getElementById('paymentPage').style.display = 'none';
     loadProducts();
     // Update browser history so back button works
@@ -756,7 +759,6 @@ function cartCheckout() {
     closeCart();
 
     // Show payment page
-    document.getElementById('detailPage').style.display  = 'none';
     document.getElementById('mainPage').style.display    = 'none';
     document.getElementById('paymentPage').style.display = 'block';
 
@@ -803,9 +805,7 @@ function quickAddToCart(productId) {
 window.addEventListener('popstate', function(e) {
     const state = e.state;
     if (!state || state === 'main') {
-        // Show main page, hide others
-        document.getElementById('mainPage').style.display = 'block';
-        document.getElementById('detailPage').style.display = 'none';
+        document.getElementById('mainPage').style.display    = 'block';
         document.getElementById('paymentPage').style.display = 'none';
         loadProducts();
     }
