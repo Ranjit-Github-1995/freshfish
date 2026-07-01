@@ -170,14 +170,21 @@ function createProductCard(product) {
     const lowStock   = !outOfStock && stockLeft <= 2;
 
     const badge = outOfStock
-        ? `<div class="badge-out-of-stock">Out of Stock</div>`
+        ? `<div class="badge-out-of-stock"><i class="fas fa-times-circle me-1"></i>Out of Stock</div>`
         : lowStock
-            ? `<div class="badge-low-stock">Only ${stockLeft.toFixed(1)}kg left!</div>`
-            : `<div class="badge-fresh">Fresh Daily</div>`;
+            ? `<div class="badge-low-stock"><i class="fas fa-exclamation-triangle me-1"></i>Only ${stockLeft.toFixed(1)}kg left!</div>`
+            : `<div class="badge-fresh"><i class="fas fa-leaf me-1"></i>Fresh Daily</div>`;
 
-    const button = outOfStock
-        ? `<button class="btn-out-of-stock" disabled><i class="fas fa-times-circle"></i> Out of Stock</button>`
-        : `<button class="btn-add-cart" onclick="showDetail(${product.id})"><i class="fas fa-cart-plus"></i> Add to Cart</button>`;
+    const actions = outOfStock
+        ? `<div class="product-actions"><button class="btn-out-of-stock" disabled><i class="fas fa-times-circle me-1"></i>Out of Stock</button></div>`
+        : `<div class="product-actions">
+               <button class="btn-view-detail" onclick="showDetail(${product.id})">
+                   <i class="fas fa-eye"></i> View
+               </button>
+               <button class="btn-add-cart" onclick="quickAddToCart(${product.id})">
+                   <i class="fas fa-cart-plus"></i> Add to Cart
+               </button>
+           </div>`;
 
     return `
         <div class="col-lg-3 col-md-4 col-sm-6">
@@ -189,8 +196,8 @@ function createProductCard(product) {
                 <div class="product-body">
                     <div class="product-name">${product.name}</div>
                     <div class="product-desc">${product.description}</div>
-                    <div class="price-tag">₹${product.price} per kg</div>
-                    ${button}
+                    <div class="price-tag"><i class="fas fa-tag me-1"></i>₹${product.price} <small>per kg</small></div>
+                    ${actions}
                 </div>
             </div>
         </div>`;
@@ -213,6 +220,7 @@ function renderCartDrawer() {
     const emptyEl  = document.getElementById('cartEmpty');
     const footerEl = document.getElementById('cartFooter');
     const subEl    = document.getElementById('cartSubtotal');
+    document.getElementById('cartCountBadge').textContent = cartItems.length;
 
     listEl.innerHTML = '';
     if (cartItems.length === 0) {
@@ -254,6 +262,10 @@ function showMainPage() {
     document.getElementById('detailPage').style.display = 'none';
     document.getElementById('paymentPage').style.display = 'none';
     loadProducts();
+    // Update browser history so back button works
+    if (history.state !== 'main') {
+        history.pushState('main', '', window.location.pathname);
+    }
 }
 
 function showDetail(productId) {
@@ -268,22 +280,38 @@ function showDetail(productId) {
     document.getElementById('detailPage').style.display = 'block';
     document.getElementById('paymentPage').style.display = 'none';
 
-    document.getElementById('detailName').textContent        = currentProduct.name;
-    document.getElementById('detailDescription').textContent = currentProduct.description;
-    document.getElementById('detailPrice').innerHTML         = `₹${currentProduct.price} <span>per kg</span>`;
-    document.getElementById('detailImage').innerHTML         = `<span style="font-size:8rem">${currentProduct.icon}</span>`;
+    document.getElementById('detailName').textContent            = currentProduct.name;
+    document.getElementById('detailDescription').textContent     = currentProduct.description;
+    document.getElementById('detailPrice').innerHTML             = `₹${currentProduct.price} <span>per kg</span>`;
+    document.getElementById('detailImage').innerHTML             = `<span style="font-size:8rem">${currentProduct.icon}</span>`;
     document.getElementById('detailLongDescription').textContent = currentProduct.longDescription;
-    document.getElementById('detailOrigin').textContent      = currentProduct.origin;
-    document.getElementById('detailBestFor').textContent     = currentProduct.bestFor;
-    document.getElementById('detailCalories').textContent    = currentProduct.calories + ' kcal';
-    document.getElementById('detailProtein').textContent     = currentProduct.protein;
-    document.getElementById('detailFat').textContent         = currentProduct.fat;
-    document.getElementById('detailOmega3').textContent      = currentProduct.omega3;
-    document.getElementById('detailCalcium').textContent     = currentProduct.calcium;
-    document.getElementById('detailIron').textContent        = currentProduct.iron;
+    document.getElementById('detailOrigin').textContent         = currentProduct.origin;
+    document.getElementById('detailBestFor').textContent        = currentProduct.bestFor;
+    document.getElementById('detailCalories').textContent       = currentProduct.calories + ' kcal';
+    document.getElementById('detailProtein').textContent        = currentProduct.protein;
+    document.getElementById('detailFat').textContent            = currentProduct.fat;
+    document.getElementById('detailOmega3').textContent         = currentProduct.omega3;
+    document.getElementById('detailCalcium').textContent        = currentProduct.calcium;
+    document.getElementById('detailIron').textContent           = currentProduct.iron;
+
+    // Show stock info
+    const stockLeft = getStock(currentProduct.id);
+    const stockEl = document.getElementById('detailStockInfo');
+    if (stockLeft <= 5) {
+        stockEl.textContent = `Only ${stockLeft.toFixed(1)} kg left today!`;
+        stockEl.style.display = 'block';
+    } else {
+        stockEl.textContent = `${stockLeft.toFixed(0)} kg available today`;
+        stockEl.style.display = 'block';
+    }
+
     document.getElementById('quantity').value = 1;
     document.getElementById('weight500').checked = true;
     calculateTotal();
+
+    // Push history state so browser back button & "Back to Products" both work
+    history.pushState({ page: 'detail', productId }, '', window.location.pathname + '?product=' + productId);
+    window.scrollTo(0, 0);
 }
 
 function increaseQuantity() {
@@ -328,9 +356,10 @@ function proceedToPayment() {
     document.getElementById('detailPage').style.display = 'none';
     document.getElementById('paymentPage').style.display = 'block';
 
+    document.getElementById('orderProductIcon').textContent = currentProduct.icon;
     document.getElementById('orderSummary').innerHTML = `
-        <strong>${currentProduct.icon} ${currentProduct.name}</strong><br>
-        ${quantity} × ${weightText} &nbsp;·&nbsp; ₹${currentProduct.price}/kg`;
+        <strong>${currentProduct.name}</strong>
+        <div style="margin-top:4px;color:var(--text-muted);font-size:.85rem;">${quantity} × ${weightText} &nbsp;·&nbsp; ₹${currentProduct.price}/kg</div>`;
     document.getElementById('finalAmount').textContent    = `₹${total.toFixed(2)}`;
     document.getElementById('payButtonAmount').textContent = `₹${total.toFixed(2)}`;
     document.getElementById('deliveryPin').value = currentUserPin;
@@ -543,6 +572,46 @@ function closeModal() {
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
+// ─── BACK FROM DETAIL ─────────────────────────────────────
+// Called by the "Back to Products" button on detail page
+function goBackFromDetail() {
+    history.back(); // triggers popstate which shows main page
+}
+
+// ─── QUICK ADD TO CART (from product card without going to detail) ─────
+function quickAddToCart(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product || isOutOfStock(productId)) return;
+
+    // Default: 500g x 1
+    const weight   = 500;
+    const quantity  = 1;
+    const total    = product.price * (weight / 1000) * quantity;
+    const weightText = '500g';
+
+    cartItems.push({ productName: product.name, icon: product.icon, quantity, weight: weightText, price: total });
+    cartCount = cartItems.length;
+    document.getElementById('cartCount').textContent = cartCount;
+    document.getElementById('cartCountBadge').textContent = cartCount;
+
+    // Open cart drawer immediately so user sees their item
+    openCart();
+}
+
+// ─── BROWSER BACK / FORWARD ──────────────────────────────
+window.addEventListener('popstate', function(e) {
+    const state = e.state;
+    if (!state || state === 'main') {
+        // Show main page, hide others
+        document.getElementById('mainPage').style.display = 'block';
+        document.getElementById('detailPage').style.display = 'none';
+        document.getElementById('paymentPage').style.display = 'none';
+        loadProducts();
+    } else if (state && state.page === 'detail' && state.productId) {
+        showDetail(state.productId);
+    }
+});
+
 document.addEventListener('DOMContentLoaded', init);
 
 window.verifyPinCode    = verifyPinCode;
@@ -559,3 +628,5 @@ window.backToDetail     = backToDetail;
 window.openCart         = openCart;
 window.closeCart        = closeCart;
 window.removeCartItem   = removeCartItem;
+window.goBackFromDetail = goBackFromDetail;
+window.quickAddToCart   = quickAddToCart;

@@ -18,59 +18,61 @@
             <div class="pin-icon-circle"><i class="fas fa-map-marker-alt"></i></div>
         </div>
         <h3>Check Delivery Area</h3>
-        <p class="text-muted">Enter your PIN code to see if we deliver to you</p>
+        <p class="text-muted">Enter your PIN code to check if we deliver to you</p>
         <input type="text" class="form-control pin-input mt-3" id="pinCodeInput"
                placeholder="Enter 6-digit PIN" maxlength="6" pattern="\d{6}">
         <button class="btn btn-pin w-100 mt-3" onclick="verifyPinCode()">
-            <i class="fas fa-check-circle"></i> Check Availability
+            <i class="fas fa-check-circle me-2"></i>Check Availability
         </button>
         <div class="service-areas mt-3">
-            <small><i class="fas fa-info-circle"></i> Serving: <strong>712503 · 712502 · 712148</strong></small>
+            <i class="fas fa-info-circle me-1"></i>
+            Serving: <strong>712503 · 712502 · 712148</strong>
         </div>
     </div>
 </div>
 
-<!-- ① CLEAN BANNER — fixed ticker, no bounce icons cluttering it -->
+<!-- BANNER -->
 <div class="delivery-banner" id="deliveryBanner">
-    <div class="banner-inner">
-        <span class="banner-icon">🚚</span>
-        <div class="banner-ticker-wrap">
-            <div class="banner-ticker">
-                Order now &nbsp;·&nbsp; Next-morning delivery guaranteed &nbsp;·&nbsp; 🐟 Fresh fish daily &nbsp;·&nbsp; Hygienic packaging &nbsp;·&nbsp; Order now &nbsp;·&nbsp; Next-morning delivery guaranteed &nbsp;·&nbsp; 🐟 Fresh fish daily &nbsp;·&nbsp; Hygienic packaging
-            </div>
+    <span class="banner-icon"><i class="fas fa-truck"></i></span>
+    <div class="banner-ticker-wrap">
+        <div class="banner-ticker">
+            <i class="fas fa-fish me-2"></i>Order now &nbsp;·&nbsp; Next-morning delivery guaranteed &nbsp;·&nbsp;
+            <i class="fas fa-leaf me-2 ms-2"></i>Fresh fish daily &nbsp;·&nbsp;
+            <i class="fas fa-box me-2 ms-2"></i>Hygienic packaging &nbsp;·&nbsp;
+            <i class="fas fa-shield-alt me-2 ms-2"></i>Quality guaranteed &nbsp;·&nbsp;
+            <i class="fas fa-fish me-2 ms-2"></i>Order now &nbsp;·&nbsp; Next-morning delivery guaranteed
         </div>
-        <span class="banner-icon">🐟</span>
     </div>
+    <span class="banner-icon"><i class="fas fa-fish"></i></span>
 </div>
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark ffm-navbar" id="navbar">
     <div class="container">
-        <a class="navbar-brand ffm-brand" href="#" onclick="showMainPage()">
-            <span class="brand-icon">🐟</span>
+        <a class="navbar-brand ffm-brand" href="#" onclick="showMainPage(); return false;">
+            <i class="fas fa-fish brand-fish-icon"></i>
             <span class="brand-text">Fresh<span class="brand-accent">Fish</span></span>
         </a>
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
                 <li class="nav-item">
-                    <a class="nav-link ffm-nav-link" href="#" onclick="showMainPage()">
-                        <i class="fas fa-home"></i> Home
+                    <a class="nav-link ffm-nav-link" href="#" onclick="showMainPage(); return false;">
+                        <i class="fas fa-home me-1"></i>Home
                     </a>
                 </li>
-                <!-- ② WORKING CART — triggers cart drawer -->
                 <li class="nav-item">
-                    <a class="nav-link ffm-nav-link position-relative" href="#" onclick="openCart(); return false;">
-                        <i class="fas fa-shopping-basket"></i> Cart
+                    <a class="nav-link ffm-nav-link cart-nav-link position-relative" href="#" onclick="openCart(); return false;">
+                        <i class="fas fa-shopping-basket me-1"></i>Cart
                         <span class="cart-badge" id="cartCount">0</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link ffm-nav-link pin-nav-link" href="#" onclick="changePinCode()">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span id="currentPin">PIN: </span>
+                    <a class="nav-link ffm-nav-link pin-nav-link" href="#" onclick="changePinCode(); return false;">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        <span id="currentPin">PIN</span>
                     </a>
                 </li>
             </ul>
@@ -78,39 +80,46 @@
     </div>
 </nav>
 
-<!-- ② CART DRAWER -->
+<!-- CART DRAWER -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
 <div class="cart-drawer" id="cartDrawer">
     <div class="cart-drawer-header">
-        <h5><i class="fas fa-shopping-basket"></i> Your Cart</h5>
+        <h5><i class="fas fa-shopping-basket"></i> Your Cart <span class="cart-count-badge" id="cartCountBadge">0</span></h5>
         <button class="cart-close-btn" onclick="closeCart()"><i class="fas fa-times"></i></button>
     </div>
-    <div class="cart-drawer-body" id="cartDrawerBody">
+    <div class="cart-drawer-body">
         <div class="cart-empty" id="cartEmpty">
-            <div style="font-size:3rem">🛒</div>
+            <i class="fas fa-shopping-basket cart-empty-icon"></i>
             <p>Your cart is empty</p>
-            <small class="text-muted">Add fish products to get started</small>
+            <small>Add fish products to get started</small>
         </div>
         <div id="cartItemsList"></div>
     </div>
     <div class="cart-drawer-footer" id="cartFooter" style="display:none;">
         <div class="cart-subtotal">
-            Subtotal: <strong id="cartSubtotal">₹0</strong>
+            <span><i class="fas fa-receipt me-2"></i>Subtotal</span>
+            <strong id="cartSubtotal">₹0</strong>
         </div>
-        <button class="btn btn-buy w-100 mt-3" onclick="closeCart(); showMainPage();">
-            <i class="fas fa-plus"></i> Add More Items
+        <div class="cart-footer-note">
+            <i class="fas fa-info-circle me-1"></i>
+            Go to a product to complete purchase
+        </div>
+        <button class="btn-cart-shop w-100 mt-3" onclick="closeCart(); showMainPage();">
+            <i class="fas fa-plus me-2"></i>Add More Items
         </button>
     </div>
 </div>
 
-<!-- MAIN PAGE -->
+<!-- ══ MAIN PAGE ══════════════════════════════════════════════ -->
 <div id="mainPage" style="display:none;">
+
+    <!-- Hero -->
     <section class="ffm-hero">
         <div class="hero-bg-bubbles">
             <span></span><span></span><span></span><span></span><span></span>
         </div>
         <div class="container text-center hero-content">
-            <div class="hero-eyebrow">🌊 Straight from the sea to your door</div>
+            <div class="hero-eyebrow"><i class="fas fa-water me-2"></i>Straight from the sea to your door</div>
             <h1 class="hero-title">Fresh Fish,<br><em>Delivered Daily</em></h1>
             <p class="hero-sub">Premium quality seafood from trusted suppliers.<br>Order before midnight for next morning delivery.</p>
             <div class="hero-badges">
@@ -127,46 +136,99 @@
         </div>
     </section>
 
+    <!-- Products -->
     <section class="ffm-products">
         <div class="container">
             <div class="section-header text-center mb-5">
-                <span class="section-eyebrow">Our Selection</span>
+                <span class="section-eyebrow"><i class="fas fa-star me-1"></i>Our Selection</span>
                 <h2 class="section-title">Premium Fish Collection</h2>
-                <p class="section-sub">Sourced fresh every morning. Limited daily stock — order early.</p>
+                <p class="section-sub"><i class="fas fa-clock me-1"></i>Sourced fresh every morning. Limited daily stock — order early.</p>
             </div>
             <div class="row g-4" id="productsContainer"></div>
         </div>
     </section>
 
+    <!-- Trust Strip -->
     <section class="ffm-trust">
         <div class="container">
             <div class="trust-grid">
                 <div class="trust-item">
-                    <div class="trust-icon">🌅</div>
-                    <div class="trust-text"><strong>Morning Delivery</strong><br><small>Fresh to your door before 9 AM</small></div>
+                    <div class="trust-icon"><i class="fas fa-truck-fast"></i></div>
+                    <div class="trust-text"><strong>Morning Delivery</strong><small>Fresh to your door before 9 AM</small></div>
                 </div>
                 <div class="trust-item">
-                    <div class="trust-icon">🧊</div>
-                    <div class="trust-text"><strong>Cold Chain</strong><br><small>Maintained from catch to delivery</small></div>
+                    <div class="trust-icon"><i class="fas fa-temperature-low"></i></div>
+                    <div class="trust-text"><strong>Cold Chain</strong><small>Maintained from catch to delivery</small></div>
                 </div>
                 <div class="trust-item">
-                    <div class="trust-icon">✅</div>
-                    <div class="trust-text"><strong>Quality Check</strong><br><small>Every batch inspected daily</small></div>
+                    <div class="trust-icon"><i class="fas fa-certificate"></i></div>
+                    <div class="trust-text"><strong>Quality Check</strong><small>Every batch inspected daily</small></div>
                 </div>
                 <div class="trust-item">
-                    <div class="trust-icon">🔒</div>
-                    <div class="trust-text"><strong>Secure Payment</strong><br><small>Razorpay encrypted checkout</small></div>
+                    <div class="trust-icon"><i class="fas fa-lock"></i></div>
+                    <div class="trust-text"><strong>Secure Payment</strong><small>Razorpay encrypted checkout</small></div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Footer -->
+    <footer class="ffm-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand-col">
+                    <div class="footer-brand">
+                        <i class="fas fa-fish footer-fish-icon"></i>
+                        <span>Fresh<span class="brand-accent">Fish</span> Market</span>
+                    </div>
+                    <p class="footer-tagline">Premium quality seafood delivered fresh to your doorstep every morning.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h6 class="footer-heading"><i class="fas fa-map-marker-alt me-2"></i>Delivery Areas</h6>
+                    <ul class="footer-list">
+                        <li><i class="fas fa-check-circle me-2"></i>PIN 712503</li>
+                        <li><i class="fas fa-check-circle me-2"></i>PIN 712502</li>
+                        <li><i class="fas fa-check-circle me-2"></i>PIN 712148</li>
+                        <li><i class="fas fa-plus-circle me-2 text-warning"></i>Expanding soon...</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h6 class="footer-heading"><i class="fas fa-clock me-2"></i>Order Timing</h6>
+                    <ul class="footer-list">
+                        <li><i class="fas fa-sun me-2 text-warning"></i>Order: Any time</li>
+                        <li><i class="fas fa-truck me-2"></i>Delivery: Next morning</li>
+                        <li><i class="fas fa-clock me-2"></i>Before 9 AM</li>
+                        <li><i class="fas fa-calendar me-2"></i>7 days a week</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h6 class="footer-heading"><i class="fas fa-headset me-2"></i>Contact Us</h6>
+                    <ul class="footer-list">
+                        <li><i class="fab fa-whatsapp me-2 text-success"></i>+91 78901 52617</li>
+                        <li><i class="fas fa-envelope me-2"></i>fresheverydayfish@gmail.com</li>
+                        <li><i class="fas fa-shield-alt me-2"></i>Razorpay secured</li>
+                        <li><i class="fas fa-leaf me-2 text-success"></i>100% Fresh guaranteed</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span><i class="fas fa-copyright me-1"></i>2025 FreshFish Market. All rights reserved.</span>
+                <span><i class="fas fa-heart me-1 text-danger"></i>Made with love for fresh seafood lovers</span>
+            </div>
+        </div>
+    </footer>
 </div>
 
-<!-- DETAIL PAGE -->
+<!-- ══ DETAIL PAGE ════════════════════════════════════════════ -->
 <div id="detailPage" style="display:none;">
     <div class="container py-5">
-        <button class="btn btn-back mb-4" onclick="showMainPage()">
-            <i class="fas fa-arrow-left"></i> Back to Products
+        <button class="btn btn-back mb-4" id="detailBackBtn" onclick="goBackFromDetail()">
+            <i class="fas fa-arrow-left me-2"></i>Back to Products
         </button>
         <div class="detail-card">
             <div class="row g-0">
@@ -174,11 +236,19 @@
                     <div class="detail-image-wrap" id="detailImage"></div>
                 </div>
                 <div class="col-md-7 detail-info">
+                    <div class="detail-badges mb-3">
+                        <span class="detail-badge-fresh"><i class="fas fa-leaf me-1"></i>Fresh Daily</span>
+                        <span class="detail-badge-delivery"><i class="fas fa-truck me-1"></i>Next Morning</span>
+                    </div>
                     <h2 class="detail-name" id="detailName"></h2>
-                    <p class="detail-desc text-muted" id="detailDescription"></p>
-                    <div class="detail-price" id="detailPrice">₹0 <span>per kg</span></div>
+                    <p class="detail-desc" id="detailDescription"></p>
+                    <div class="detail-price-wrap">
+                        <div class="detail-price" id="detailPrice">₹0 <span>per kg</span></div>
+                        <div class="detail-stock-info" id="detailStockInfo"></div>
+                    </div>
+
                     <div class="mb-4">
-                        <label class="detail-label">Select Weight</label>
+                        <label class="detail-label"><i class="fas fa-weight me-2"></i>Select Weight</label>
                         <div class="btn-group weight-group" role="group">
                             <input type="radio" class="btn-check" name="weight" id="weight500" value="500" checked>
                             <label class="btn btn-weight" for="weight500">500g</label>
@@ -188,67 +258,107 @@
                             <label class="btn btn-weight" for="weight1000">1 kg</label>
                         </div>
                     </div>
+
                     <div class="mb-4">
-                        <label class="detail-label">Quantity</label>
+                        <label class="detail-label"><i class="fas fa-sort-numeric-up me-2"></i>Quantity</label>
                         <div class="qty-selector">
-                            <button class="qty-btn" onclick="decreaseQuantity()">−</button>
+                            <button class="qty-btn" onclick="decreaseQuantity()"><i class="fas fa-minus"></i></button>
                             <input type="number" class="qty-input" value="1" min="1" id="quantity">
-                            <button class="qty-btn" onclick="increaseQuantity()">+</button>
+                            <button class="qty-btn" onclick="increaseQuantity()"><i class="fas fa-plus"></i></button>
                         </div>
                     </div>
-                    <div class="detail-total">Total: <strong id="totalPrice">₹0</strong></div>
+
+                    <div class="detail-total-box">
+                        <span><i class="fas fa-receipt me-2"></i>Total Amount</span>
+                        <strong id="totalPrice">₹0</strong>
+                    </div>
+
                     <button class="btn btn-buy w-100 mt-3" onclick="proceedToPayment()">
-                        <i class="fas fa-shopping-bag"></i> Proceed to Buy
+                        <i class="fas fa-shopping-bag me-2"></i>Proceed to Buy
                     </button>
+
                     <div class="detail-features mt-4">
-                        <span><i class="fas fa-check-circle text-success"></i> 100% Fresh</span>
-                        <span><i class="fas fa-check-circle text-success"></i> Daily Stock</span>
-                        <span><i class="fas fa-check-circle text-success"></i> Premium Quality</span>
-                        <span><i class="fas fa-check-circle text-success"></i> Hygienic Pack</span>
+                        <span><i class="fas fa-check-circle text-success me-1"></i>100% Fresh</span>
+                        <span><i class="fas fa-check-circle text-success me-1"></i>Daily Stock</span>
+                        <span><i class="fas fa-check-circle text-success me-1"></i>Premium Quality</span>
+                        <span><i class="fas fa-check-circle text-success me-1"></i>Hygienic Pack</span>
                     </div>
                 </div>
             </div>
+
+            <!-- Tabs -->
             <div class="detail-tabs-wrap">
-                <ul class="nav nav-tabs ffm-tabs" id="productInfoTabs" role="tablist">
-                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button">Description</button></li>
-                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#nutrition" type="button">Nutrition</button></li>
-                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#cooking" type="button">Cooking Tips</button></li>
-                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#storage" type="button">Storage</button></li>
+                <ul class="nav nav-tabs ffm-tabs" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#description" type="button"><i class="fas fa-info-circle me-1"></i>Description</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#nutrition" type="button"><i class="fas fa-heartbeat me-1"></i>Nutrition</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#cooking" type="button"><i class="fas fa-fire me-1"></i>Cooking Tips</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#storage" type="button"><i class="fas fa-snowflake me-1"></i>Storage</button></li>
                 </ul>
                 <div class="tab-content ffm-tab-content">
                     <div class="tab-pane fade show active" id="description" role="tabpanel">
                         <p id="detailLongDescription"></p>
                         <div class="row mt-3">
-                            <div class="col-md-6"><h6 class="tab-subhead">Origin & Source</h6><p id="detailOrigin" class="text-muted"></p></div>
-                            <div class="col-md-6"><h6 class="tab-subhead">Best For</h6><p id="detailBestFor" class="text-muted"></p></div>
+                            <div class="col-md-6">
+                                <h6 class="tab-subhead"><i class="fas fa-map-marker-alt me-2"></i>Origin & Source</h6>
+                                <p id="detailOrigin" class="text-muted"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="tab-subhead"><i class="fas fa-utensils me-2"></i>Best For</h6>
+                                <p id="detailBestFor" class="text-muted"></p>
+                            </div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="nutrition" role="tabpanel">
-                        <p class="text-muted small mb-3">Per 100g serving (raw)</p>
+                        <p class="text-muted small mb-3"><i class="fas fa-info-circle me-1"></i>Per 100g serving (raw)</p>
                         <div class="nutrition-grid">
-                            <div class="nutr-item"><span class="nutr-icon">🔥</span><span class="nutr-label">Calories</span><strong id="detailCalories"></strong></div>
-                            <div class="nutr-item"><span class="nutr-icon">💪</span><span class="nutr-label">Protein</span><strong id="detailProtein"></strong></div>
-                            <div class="nutr-item"><span class="nutr-icon">🫀</span><span class="nutr-label">Fat</span><strong id="detailFat"></strong></div>
-                            <div class="nutr-item"><span class="nutr-icon">🐟</span><span class="nutr-label">Omega-3</span><strong id="detailOmega3"></strong></div>
-                            <div class="nutr-item"><span class="nutr-icon">🦴</span><span class="nutr-label">Calcium</span><strong id="detailCalcium"></strong></div>
-                            <div class="nutr-item"><span class="nutr-icon">💧</span><span class="nutr-label">Iron</span><strong id="detailIron"></strong></div>
+                            <div class="nutr-item"><i class="fas fa-fire nutr-icon text-danger"></i><span class="nutr-label">Calories</span><strong id="detailCalories"></strong></div>
+                            <div class="nutr-item"><i class="fas fa-dumbbell nutr-icon text-primary"></i><span class="nutr-label">Protein</span><strong id="detailProtein"></strong></div>
+                            <div class="nutr-item"><i class="fas fa-tint nutr-icon text-warning"></i><span class="nutr-label">Fat</span><strong id="detailFat"></strong></div>
+                            <div class="nutr-item"><i class="fas fa-heart nutr-icon text-danger"></i><span class="nutr-label">Omega-3</span><strong id="detailOmega3"></strong></div>
+                            <div class="nutr-item"><i class="fas fa-bone nutr-icon text-secondary"></i><span class="nutr-label">Calcium</span><strong id="detailCalcium"></strong></div>
+                            <div class="nutr-item"><i class="fas fa-capsules nutr-icon text-info"></i><span class="nutr-label">Iron</span><strong id="detailIron"></strong></div>
                         </div>
                     </div>
                     <div class="tab-pane fade" id="cooking" role="tabpanel">
-                        <div class="cooking-methods">
-                            <h6 class="tab-subhead"><i class="fas fa-fire-alt text-danger"></i> Preparation</h6>
-                            <ol><li>Thaw in refrigerator overnight if frozen</li><li>Rinse under cold water</li><li>Pat dry with paper towels</li><li>Marinate at least 30 minutes</li></ol>
-                            <h6 class="tab-subhead mt-3"><i class="fas fa-clock text-primary"></i> Cooking Times</h6>
-                            <ul><li>Pan Fry: 4–5 min per side</li><li>Grill: 6–8 min per side</li><li>Curry: 15–20 min on medium</li><li>Steam: 10–12 min</li></ul>
-                            <div class="alert alert-warning mt-3"><i class="fas fa-exclamation-triangle"></i> <strong>Tip:</strong> Don't overcook — fish dries out fast.</div>
+                        <h6 class="tab-subhead"><i class="fas fa-mortar-pestle me-2"></i>Preparation</h6>
+                        <ol class="cooking-list"><li>Thaw in refrigerator overnight if frozen</li><li>Rinse under cold water</li><li>Pat dry with paper towels</li><li>Marinate at least 30 minutes</li></ol>
+                        <h6 class="tab-subhead mt-4"><i class="fas fa-clock me-2"></i>Cooking Times</h6>
+                        <div class="cooking-times-grid">
+                            <div class="cook-time-item"><i class="fas fa-fire me-2 text-danger"></i><span>Pan Fry</span><strong>4–5 min/side</strong></div>
+                            <div class="cook-time-item"><i class="fas fa-bacon me-2 text-warning"></i><span>Grill</span><strong>6–8 min/side</strong></div>
+                            <div class="cook-time-item"><i class="fas fa-drumstick-bite me-2 text-success"></i><span>Curry</span><strong>15–20 min</strong></div>
+                            <div class="cook-time-item"><i class="fas fa-wind me-2 text-info"></i><span>Steam</span><strong>10–12 min</strong></div>
                         </div>
+                        <div class="cook-tip mt-3"><i class="fas fa-lightbulb me-2"></i><strong>Pro Tip:</strong> Don't overcook — fish dries out fast and loses flavor.</div>
                     </div>
                     <div class="tab-pane fade" id="storage" role="tabpanel">
                         <div class="row">
-                            <div class="col-md-6 mb-3"><div class="storage-card p-3 border rounded"><h6><i class="fas fa-snowflake text-info"></i> Refrigeration</h6><p>Store at 0–4°C for up to 2 days</p><small class="text-muted">Coldest part of your fridge</small></div></div>
-                            <div class="col-md-6 mb-3"><div class="storage-card p-3 border rounded"><h6><i class="fas fa-igloo text-primary"></i> Freezing</h6><p>Freeze at −18°C for up to 3 months</p><small class="text-muted">Wrap tightly in freezer bags</small></div></div>
+                            <div class="col-md-6 mb-3">
+                                <div class="storage-card">
+                                    <div class="storage-card-icon"><i class="fas fa-snowflake"></i></div>
+                                    <div>
+                                        <h6>Refrigeration</h6>
+                                        <p>Store at 0–4°C for up to 2 days</p>
+                                        <small>Coldest part of your fridge</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="storage-card">
+                                    <div class="storage-card-icon freeze"><i class="fas fa-cube"></i></div>
+                                    <div>
+                                        <h6>Freezing</h6>
+                                        <p>Freeze at −18°C for up to 3 months</p>
+                                        <small>Wrap tightly in freezer bags</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="alert alert-info mt-2"><ul class="mb-0"><li>Use airtight container</li><li>Never refreeze thawed fish</li><li>Check for off odors before cooking</li></ul></div>
+                        <div class="storage-tips">
+                            <div class="storage-tip"><i class="fas fa-check-circle text-success me-2"></i>Always use airtight container</div>
+                            <div class="storage-tip"><i class="fas fa-times-circle text-danger me-2"></i>Never refreeze thawed fish</div>
+                            <div class="storage-tip"><i class="fas fa-nose me-2 text-warning"></i>Check for off odors before cooking</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -256,117 +366,171 @@
     </div>
 </div>
 
-<!-- PAYMENT PAGE — ④ Removed "Recommended" UPI box -->
+<!-- ══ PAYMENT PAGE ═══════════════════════════════════════════ -->
 <div id="paymentPage" style="display:none;">
     <div class="container py-5">
         <button class="btn btn-back mb-4" onclick="backToDetail()">
-            <i class="fas fa-arrow-left"></i> Back to Product
+            <i class="fas fa-arrow-left me-2"></i>Back to Product
         </button>
-        <h2 class="page-title text-center mb-5">Complete Your Order</h2>
+        <div class="text-center mb-5">
+            <h2 class="page-title"><i class="fas fa-lock me-3 text-success"></i>Complete Your Order</h2>
+            <p class="page-sub"><i class="fas fa-shield-alt me-2 text-success"></i>Secured & encrypted by Razorpay</p>
+        </div>
         <div class="row g-4">
+            <!-- Left — Customer Details -->
             <div class="col-md-6">
                 <div class="pay-card">
-                    <h4 class="pay-card-title"><i class="fas fa-user-circle"></i> Your Details</h4>
+                    <h4 class="pay-card-title"><i class="fas fa-user-circle me-2"></i>Your Details</h4>
                     <form id="paymentForm">
-                        <div class="mb-3">
-                            <label class="ffm-label"><i class="fas fa-user"></i> Full Name *</label>
+                        <div class="ffm-field mb-3">
+                            <label class="ffm-label"><i class="fas fa-user me-2"></i>Full Name <span class="required">*</span></label>
                             <input type="text" class="form-control ffm-input" id="customerName" placeholder="Enter your full name" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="ffm-label"><i class="fas fa-phone"></i> Phone Number *</label>
-                            <div class="input-group">
-                                <span class="input-group-text ffm-input-prefix">+91</span>
+                        <div class="ffm-field mb-3">
+                            <label class="ffm-label"><i class="fas fa-mobile-alt me-2"></i>WhatsApp Number <span class="required">*</span></label>
+                            <div class="input-group ffm-input-group">
+                                <span class="input-group-text ffm-input-prefix"><i class="fas fa-flag me-1"></i>+91</span>
                                 <input type="tel" class="form-control ffm-input" id="customerPhone" placeholder="9876543210" maxlength="10" required>
                             </div>
-                            <small class="text-muted">Order bill sent to this WhatsApp number</small>
+                            <small class="field-hint"><i class="fab fa-whatsapp me-1 text-success"></i>Order bill sent to this number</small>
                         </div>
-                        <h5 class="pay-card-title mt-4"><i class="fas fa-map-marked-alt"></i> Delivery Address</h5>
-                        <div class="mb-3">
-                            <label class="ffm-label"><i class="fas fa-home"></i> Complete Address *</label>
-                            <textarea class="form-control ffm-input" id="customerAddress" rows="2" placeholder="House No, Street, Area" required></textarea>
+
+                        <div class="pay-section-divider"><i class="fas fa-map-marked-alt me-2"></i>Delivery Address</div>
+
+                        <div class="ffm-field mb-3">
+                            <label class="ffm-label"><i class="fas fa-home me-2"></i>Complete Address <span class="required">*</span></label>
+                            <textarea class="form-control ffm-input" id="customerAddress" rows="3" placeholder="House No., Street, Area, City" required></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label class="ffm-label"><i class="fas fa-landmark"></i> Landmark</label>
-                            <input type="text" class="form-control ffm-input" id="customerLandmark" placeholder="Near landmark (optional)">
+                        <div class="ffm-field mb-3">
+                            <label class="ffm-label"><i class="fas fa-landmark me-2"></i>Landmark <span class="optional">(optional)</span></label>
+                            <input type="text" class="form-control ffm-input" id="customerLandmark" placeholder="Near school, temple, bank...">
                         </div>
-                        <div class="mb-3">
-                            <label class="ffm-label"><i class="fas fa-map-pin"></i> PIN Code</label>
-                            <input type="text" class="form-control ffm-input" id="deliveryPin" readonly>
+                        <div class="ffm-field mb-3">
+                            <label class="ffm-label"><i class="fas fa-map-pin me-2"></i>PIN Code</label>
+                            <div class="pin-readonly-wrap">
+                                <input type="text" class="form-control ffm-input" id="deliveryPin" readonly>
+                                <span class="pin-verified"><i class="fas fa-check-circle"></i> Delivery available</span>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
+
+            <!-- Right — Order Summary -->
             <div class="col-md-6">
-                <div class="pay-card">
-                    <h4 class="pay-card-title"><i class="fas fa-receipt"></i> Order Summary</h4>
-                    <div class="order-summary-box">
-                        <p id="orderSummary" class="mb-2"></p>
-                        <div class="order-total">Total: <strong id="finalAmount">₹0</strong></div>
+                <div class="pay-card order-summary-card">
+                    <h4 class="pay-card-title"><i class="fas fa-receipt me-2"></i>Order Summary</h4>
+
+                    <div class="order-summary-box" id="orderSummaryBox">
+                        <div class="order-product-row">
+                            <div class="order-product-icon" id="orderProductIcon">🐟</div>
+                            <div class="order-product-info" id="orderSummary"></div>
+                        </div>
+                        <div class="order-total">
+                            <span><i class="fas fa-calculator me-2"></i>Total Amount</span>
+                            <strong id="finalAmount">₹0</strong>
+                        </div>
                     </div>
 
-                    <!-- Payment icons only, no "Recommended" label -->
-                    <div class="payment-icons-row mt-4">
-                        <span class="pay-icon-label">Accepted payments</span>
+                    <!-- Delivery info -->
+                    <div class="delivery-info-box mt-3">
+                        <div class="delivery-info-item">
+                            <i class="fas fa-truck text-cyan"></i>
+                            <span>Delivery tomorrow morning before 9 AM</span>
+                        </div>
+                        <div class="delivery-info-item">
+                            <i class="fas fa-leaf text-success"></i>
+                            <span>100% fresh, hygienic packaging</span>
+                        </div>
+                    </div>
+
+                    <!-- Payment icons -->
+                    <div class="payment-icons-row mt-3">
+                        <span class="pay-icon-label"><i class="fas fa-credit-card me-2"></i>Accepted Payments</span>
                         <div class="pay-icons-list">
-                            <span class="pay-icon-pill">📱 UPI</span>
-                            <i class="fab fa-cc-visa fa-xl text-primary"></i>
-                            <i class="fab fa-cc-mastercard fa-xl text-danger"></i>
+                            <span class="pay-icon-pill"><i class="fas fa-mobile-alt me-1"></i>UPI</span>
+                            <i class="fab fa-cc-visa fa-xl" style="color:#1a1f71"></i>
+                            <i class="fab fa-cc-mastercard fa-xl" style="color:#eb001b"></i>
+                            <i class="fab fa-cc-amex fa-xl" style="color:#2e77bc"></i>
                             <i class="fas fa-university fa-xl text-secondary"></i>
-                            <i class="fas fa-wallet fa-xl text-warning"></i>
                         </div>
                     </div>
 
                     <button class="btn btn-pay w-100 mt-4" onclick="processPayment()">
-                        <i class="fas fa-lock"></i> Pay Now <span id="payButtonAmount">₹0</span>
+                        <i class="fas fa-lock me-2"></i>Pay Now <span id="payButtonAmount">₹0</span>
                     </button>
-                    <div class="secure-note text-center mt-3">
-                        <small><i class="fas fa-shield-alt text-success"></i> 100% Secure · Encrypted by Razorpay</small>
-                    </div>
 
-                    <!-- ⑤ WhatsApp bill note -->
                     <div class="whatsapp-note mt-3">
-                        <i class="fab fa-whatsapp"></i>
-                        Your order bill will be sent to your WhatsApp after payment
+                        <i class="fab fa-whatsapp me-2"></i>
+                        Bill sent to your WhatsApp after payment
+                    </div>
+                    <div class="secure-note text-center mt-2">
+                        <small><i class="fas fa-shield-alt me-1 text-success"></i>100% Secure · Encrypted by Razorpay</small>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Payment Page Footer -->
+    <div class="pay-footer">
+        <i class="fas fa-lock me-2"></i>Your data is safe & secure
+        <span class="mx-3">·</span>
+        <i class="fas fa-fish me-2"></i>Fresh Fish Market © 2025
+    </div>
 </div>
 
+<!-- Overlay -->
 <div class="overlay" id="overlay"></div>
 
-<!-- ③ SUCCESS MODAL — removed email line -->
+<!-- Success Modal -->
 <div class="ffm-modal" id="successModal">
     <div class="ffm-modal-icon success-icon"><i class="fas fa-check-circle"></i></div>
     <h3>Payment Successful!</h3>
-    <p class="lead mb-2">Your order is confirmed.</p>
-    <p class="mb-3">Order ID: <strong id="orderId">ORD123456</strong></p>
-    <div class="modal-info-box">
-        <ul class="mb-0 small">
-            <li><i class="fab fa-whatsapp text-success"></i> Bill sent to WhatsApp: <span id="confirmedPhone"></span></li>
-            <li><i class="fas fa-truck text-primary"></i> Delivery: Tomorrow morning</li>
-            <li><i class="fas fa-clock text-warning"></i> Our team will confirm shortly</li>
-        </ul>
+    <p class="lead mb-3">Your order is confirmed.</p>
+    <div class="modal-order-id">
+        <i class="fas fa-hashtag me-1"></i>Order ID: <strong id="orderId"></strong>
     </div>
-    <p class="text-muted small mt-3">Thank you for choosing Fresh Fish Market! 🐟</p>
-    <button class="btn btn-buy mt-2" onclick="closeModal()">Continue Shopping</button>
+    <div class="modal-info-box mt-3">
+        <div class="modal-info-item">
+            <i class="fab fa-whatsapp text-success"></i>
+            <span>Bill sent to: <strong id="confirmedPhone"></strong></span>
+        </div>
+        <div class="modal-info-item">
+            <i class="fas fa-truck text-primary"></i>
+            <span>Delivery: <strong>Tomorrow morning before 9 AM</strong></span>
+        </div>
+        <div class="modal-info-item">
+            <i class="fas fa-phone text-warning"></i>
+            <span>Our team will call to confirm shortly</span>
+        </div>
+    </div>
+    <p class="text-muted small mt-3"><i class="fas fa-heart me-1 text-danger"></i>Thank you for choosing Fresh Fish Market!</p>
+    <button class="btn btn-buy mt-2 w-100" onclick="closeModal()">
+        <i class="fas fa-fish me-2"></i>Continue Shopping
+    </button>
 </div>
 
 <!-- Not Available Modal -->
 <div class="ffm-modal" id="notAvailableModal" style="display:none;">
-    <div class="ffm-modal-icon" style="color:#f59e0b;font-size:3.5rem">⚠️</div>
+    <div class="ffm-modal-icon" style="color:#f59e0b"><i class="fas fa-exclamation-triangle"></i></div>
     <h3>Not Available Yet</h3>
     <p>Sorry, we don't deliver to this PIN code yet.</p>
-    <p class="text-muted">We're expanding soon!</p>
-    <p><strong>Currently serving: 712503 · 712502 · 712148</strong></p>
-    <button class="btn btn-buy mt-2" onclick="retryPinCode()">Try Another PIN</button>
+    <p class="text-muted">We're expanding our delivery areas soon!</p>
+    <div class="modal-pin-list">
+        <i class="fas fa-map-marker-alt me-2 text-success"></i>
+        <strong>Currently serving: 712503 · 712502 · 712148</strong>
+    </div>
+    <button class="btn btn-buy mt-3 w-100" onclick="retryPinCode()">
+        <i class="fas fa-redo me-2"></i>Try Another PIN
+    </button>
 </div>
 
 <!-- Processing Indicator -->
 <div id="processingIndicator" class="processing-indicator" style="display:none;">
-    <div class="spinner-border text-success" role="status"></div>
-    <p class="mt-3 mb-0"><i class="fas fa-lock"></i> Processing your payment…</p>
+    <div class="spinner-border text-success mb-3" role="status"></div>
+    <p class="mb-1"><i class="fas fa-lock me-2"></i>Processing your payment…</p>
+    <small class="text-muted">Please don't close this window</small>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
