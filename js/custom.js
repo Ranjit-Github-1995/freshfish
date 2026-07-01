@@ -200,16 +200,29 @@ function createProductCard(product) {
                    <label class="card-weight-label"><i class="fas fa-weight me-1"></i>Select Weight</label>
                    <div class="card-weight-btns">
                        <input type="radio" name="weight_${product.id}" id="w${product.id}_500" value="500" checked
-                              onchange="updateCardPrice(${product.id}, 500, ${product.price})">
+                              onchange="updateCardPrice(${product.id}, ${product.price})">
                        <label class="card-w-btn" for="w${product.id}_500">500g</label>
 
                        <input type="radio" name="weight_${product.id}" id="w${product.id}_750" value="750"
-                              onchange="updateCardPrice(${product.id}, 750, ${product.price})">
+                              onchange="updateCardPrice(${product.id}, ${product.price})">
                        <label class="card-w-btn" for="w${product.id}_750">750g</label>
 
                        <input type="radio" name="weight_${product.id}" id="w${product.id}_1000" value="1000"
-                              onchange="updateCardPrice(${product.id}, 1000, ${product.price})">
+                              onchange="updateCardPrice(${product.id}, ${product.price})">
                        <label class="card-w-btn" for="w${product.id}_1000">1 kg</label>
+                   </div>
+               </div>
+
+               <div class="card-qty-row">
+                   <label class="card-weight-label"><i class="fas fa-sort-numeric-up me-1"></i>Quantity</label>
+                   <div class="card-qty-selector">
+                       <button class="card-qty-btn" onclick="changeCardQty(${product.id}, -1, ${product.price})">
+                           <i class="fas fa-minus"></i>
+                       </button>
+                       <span class="card-qty-display" id="card_qty_${product.id}">1</span>
+                       <button class="card-qty-btn" onclick="changeCardQty(${product.id}, 1, ${product.price})">
+                           <i class="fas fa-plus"></i>
+                       </button>
                    </div>
                </div>
 
@@ -240,20 +253,30 @@ function createProductCard(product) {
         </div>`;
 }
 
-// Update price on card when weight changes
-function updateCardPrice(productId, weightGrams, pricePerKg) {
-    const total = pricePerKg * (weightGrams / 1000);
-    const el = document.getElementById('card_price_' + productId);
-    if (el) {
-        el.textContent = '₹' + total.toFixed(2);
-        // animate price change
-        el.style.transform = 'scale(1.15)';
-        el.style.color = '#06d6a0';
-        setTimeout(() => {
-            el.style.transform = 'scale(1)';
-            el.style.color = '';
-        }, 300);
+// Update price when weight or qty changes
+function updateCardPrice(productId, pricePerKg) {
+    const selected = document.querySelector(`input[name="weight_${productId}"]:checked`);
+    const weight   = selected ? parseInt(selected.value) : 500;
+    const qtyEl    = document.getElementById('card_qty_' + productId);
+    const qty      = qtyEl ? parseInt(qtyEl.textContent) || 1 : 1;
+    const total    = pricePerKg * (weight / 1000) * qty;
+    const priceEl  = document.getElementById('card_price_' + productId);
+    if (priceEl) {
+        priceEl.textContent    = '₹' + total.toFixed(2);
+        priceEl.style.transform = 'scale(1.15)';
+        priceEl.style.color     = '#06d6a0';
+        setTimeout(() => { priceEl.style.transform = 'scale(1)'; priceEl.style.color = ''; }, 300);
     }
+}
+
+// Change quantity on card
+function changeCardQty(productId, delta, pricePerKg) {
+    const qtyEl = document.getElementById('card_qty_' + productId);
+    if (!qtyEl) return;
+    let qty = parseInt(qtyEl.textContent) || 1;
+    qty = Math.max(1, qty + delta);
+    qtyEl.textContent = qty;
+    updateCardPrice(productId, pricePerKg);
 }
 
 // Add to cart — stays on main page so user can add more
@@ -267,25 +290,25 @@ function addToCartFromCard(productId) {
 
     const selected  = document.querySelector(`input[name="weight_${productId}"]:checked`);
     const weight    = selected ? parseInt(selected.value) : 500;
+    const qtyEl     = document.getElementById('card_qty_' + productId);
+    const quantity  = qtyEl ? parseInt(qtyEl.textContent) || 1 : 1;
     const stockLeft = getStock(productId);
-    const soldKg    = weight / 1000;
+    const soldKg    = (weight / 1000) * quantity;
 
     if (soldKg > stockLeft) {
         alert(`Only ${stockLeft.toFixed(1)} kg available today.`);
         return;
     }
 
-    const total      = product.price * (weight / 1000);
+    const total      = product.price * (weight / 1000) * quantity;
     const weightText = weight >= 1000 ? `${weight/1000}kg` : `${weight}g`;
 
-    // Check if same product + same weight already in cart — update it instead of duplicating
+    // Same product + same weight → update, else add new
     const existingIdx = cartItems.findIndex(
         i => i.productName === product.name && i.weight === weightText
     );
-
     if (existingIdx >= 0) {
-        // Update quantity and price
-        cartItems[existingIdx].quantity += 1;
+        cartItems[existingIdx].quantity += quantity;
         cartItems[existingIdx].price = product.price * (weight / 1000) * cartItems[existingIdx].quantity;
     } else {
         cartItems.push({
@@ -295,7 +318,7 @@ function addToCartFromCard(productId) {
             pricePerKg:  product.price,
             weight:      weightText,
             weightGrams: weight,
-            quantity:    1,
+            quantity,
             price:       total
         });
     }
@@ -323,7 +346,8 @@ function buyNowFromCard(productId) {
 
     const selected  = document.querySelector(`input[name="weight_${productId}"]:checked`);
     const weight    = selected ? parseInt(selected.value) : 500;
-    const quantity  = 1;
+    const qtyEl     = document.getElementById('card_qty_' + productId);
+    const quantity  = qtyEl ? parseInt(qtyEl.textContent) || 1 : 1;
     const stockLeft = getStock(productId);
     const soldKg    = (weight / 1000) * quantity;
 
@@ -565,12 +589,12 @@ function processPayment() {
     const landmarkInput = document.getElementById('customerLandmark');
 
     let valid = true;
-    [nameInput, phoneInput, addressInput].forEach(el => {
+    [nameInput, phoneInput, addressInput, landmarkInput].forEach(el => {
         if (!el.value.trim()) { valid = false; el.classList.add('is-invalid'); }
         else el.classList.remove('is-invalid');
     });
     if (phoneInput.value.length !== 10) { valid = false; phoneInput.classList.add('is-invalid'); }
-    if (!valid) { alert('Please fill all required fields correctly'); return; }
+    if (!valid) { alert('Please fill all required fields including Landmark'); return; }
 
     const soldKg = (currentOrderDetails.weight / 1000) * currentOrderDetails.quantity;
     if (soldKg > getStock(currentProduct.id)) {
@@ -585,17 +609,12 @@ function processPayment() {
 }
 
 function initiateRazorpayPayment(customerDetails) {
-    const totalAmount = currentOrderDetails.total || currentOrderDetails.items?.reduce((s,i)=>s+i.price,0) || 0;
-    const description  = currentOrderDetails.isCartOrder
-        ? `Cart Order - ${currentOrderDetails.items.length} item(s)`
-        : `Order for ${currentProduct.name}`;
-
     const options = {
         key: CONFIG.razorpayKey,
-        amount: Math.round(totalAmount * 100),
+        amount: Math.round(currentOrderDetails.total * 100),
         currency: 'INR',
         name: CONFIG.businessName,
-        description,
+        description: `Order for ${currentProduct.name}`,
         handler: response => handlePaymentSuccess(response, customerDetails),
         prefill: { name: customerDetails.name, contact: customerDetails.phone },
         notes: {
@@ -629,40 +648,21 @@ function initiateRazorpayPayment(customerDetails) {
 function handlePaymentSuccess(response, customerDetails) {
     document.getElementById('processingIndicator').style.display = 'block';
 
-    const orderId = 'FFM' + Date.now();
-    let remaining = 0;
-    let productSummary = '';
-    let weightText = '';
-    let totalAmount = 0;
-
-    if (currentOrderDetails.isCartOrder) {
-        // Deduct stock for each cart item
-        currentOrderDetails.items.forEach(item => {
-            deductStock(item.productId, item.weightGrams || 500, item.quantity);
-        });
-        totalAmount    = currentOrderDetails.items.reduce((s,i) => s+i.price, 0);
-        productSummary = currentOrderDetails.items.map(i => `${i.productName} ${i.quantity}×${i.weight}`).join(', ');
-        weightText     = currentOrderDetails.items.map(i => i.weight).join(', ');
-    } else {
-        remaining   = deductStock(currentProduct.id, currentOrderDetails.weight, currentOrderDetails.quantity);
-        totalAmount = currentOrderDetails.total;
-        weightText  = currentOrderDetails.weight >= 1000
-            ? `${currentOrderDetails.weight/1000} kg`
-            : `${currentOrderDetails.weight}g`;
-        productSummary = currentProduct.name;
-    }
+    const orderId    = 'FFM' + Date.now();
+    const remaining  = deductStock(currentProduct.id, currentOrderDetails.weight, currentOrderDetails.quantity);
+    const weightText = currentOrderDetails.weight >= 1000
+        ? `${currentOrderDetails.weight/1000} kg`
+        : `${currentOrderDetails.weight}g`;
 
     const orderData = {
         orderId,
         paymentId:      response.razorpay_payment_id,
-        product:        productSummary,
-        icon:           currentOrderDetails.isCartOrder ? '🛒' : currentProduct.icon,
+        product:        currentProduct.name,
+        icon:           currentProduct.icon,
         weight:         weightText,
-        quantity:       currentOrderDetails.isCartOrder
-                            ? currentOrderDetails.items.reduce((s,i)=>s+i.quantity, 0)
-                            : currentOrderDetails.quantity,
-        pricePerKg:     currentOrderDetails.isCartOrder ? 'Multiple' : currentProduct.price,
-        amount:         totalAmount,
+        quantity:       currentOrderDetails.quantity,
+        pricePerKg:     currentProduct.price,
+        amount:         currentOrderDetails.total,
         customerDetails,
         timestamp:      new Date().toISOString(),
         stockRemaining: remaining
@@ -674,7 +674,7 @@ function handlePaymentSuccess(response, customerDetails) {
     setTimeout(() => {
         document.getElementById('processingIndicator').style.display = 'none';
         showSuccessModal(orderId, customerDetails);
-        // Clear cart after successful payment
+        // Clear cart after payment
         cartItems = [];
         cartCount = 0;
         document.getElementById('cartCount').textContent = 0;
@@ -687,7 +687,7 @@ function handlePaymentSuccess(response, customerDetails) {
 // ─── ⑤ WHATSAPP BILL TO CUSTOMER ─────────────────────────────────────────────
 function sendWhatsAppBill(orderData) {
     const d = orderData;
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbzkFxD11mVy2BK-jZ1hry0ZKy9we_pTTPcZqu8EQIN1KkK3Mz0ZbGVkRVxeeIoAAatz/exec';
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbykBg2S8bAVejZQxTZT-2nK3XiFkHAAh7EgM0hNSkghRa9-tXDnNsgj07fC2WG3ykRp/exec';
 
     // Build a bill message — Google Apps Script will forward this to WhatsApp via Twilio/Wati
     const billMessage =
@@ -742,7 +742,7 @@ Thank you, ${d.customerDetails.name}! 🙏`;
 // ─── ⑤ ADMIN EMAIL ────────────────────────────────────────────────────────────
 function sendAdminEmail(orderData) {
     const d = orderData;
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbzkFxD11mVy2BK-jZ1hry0ZKy9we_pTTPcZqu8EQIN1KkK3Mz0ZbGVkRVxeeIoAAatz/exec';
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbykBg2S8bAVejZQxTZT-2nK3XiFkHAAh7EgM0hNSkghRa9-tXDnNsgj07fC2WG3ykRp/exec';
 
     fetch(webhookUrl, {
         method: 'POST', mode: 'no-cors',
@@ -789,44 +789,38 @@ function closeModal() {
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 // ─── CART CHECKOUT ────────────────────────────────────────
+// Uses the LAST item in cart for payment (single product checkout)
 function cartCheckout() {
     if (cartItems.length === 0) return;
 
-    // Calculate real grand total across ALL cart items
-    const grandTotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+    const lastItem = cartItems[cartItems.length - 1];
+    const product  = products.find(p => p.id === lastItem.productId);
+    if (!product) { closeCart(); showMainPage(); return; }
 
-    // Build order summary HTML for all items
-    let summaryHTML = '';
-    cartItems.forEach(item => {
-        summaryHTML += `
-            <div class="checkout-item-row">
-                <span class="checkout-item-icon">${item.icon}</span>
-                <div class="checkout-item-detail">
-                    <strong>${item.productName}</strong>
-                    <small>${item.quantity} × ${item.weight} · ₹${(item.pricePerKg || 0)}/kg</small>
-                </div>
-                <span class="checkout-item-price">₹${item.price.toFixed(2)}</span>
-            </div>`;
-    });
-
-    // Store cart order for Razorpay
+    currentProduct      = product;
     currentOrderDetails = {
-        isCartOrder: true,
-        items:       cartItems,
-        total:       grandTotal
+        isCartOrder: false,
+        product,
+        weight:   lastItem.weightGrams || 500,
+        quantity: lastItem.quantity,
+        total:    lastItem.price
     };
-    // currentProduct used for Razorpay description — use first item
-    currentProduct = products.find(p => p.id === cartItems[0].productId) || products[0];
+
+    const weightText = lastItem.weight;
 
     closeCart();
 
     document.getElementById('mainPage').style.display    = 'none';
     document.getElementById('paymentPage').style.display = 'block';
 
-    document.getElementById('orderProductIcon').textContent = cartItems.length > 1 ? '🛒' : cartItems[0].icon;
-    document.getElementById('orderSummary').innerHTML = summaryHTML;
-    document.getElementById('finalAmount').textContent     = '₹' + grandTotal.toFixed(2);
-    document.getElementById('payButtonAmount').textContent = '₹' + grandTotal.toFixed(2);
+    document.getElementById('orderProductIcon').textContent = product.icon;
+    document.getElementById('orderSummary').innerHTML = `
+        <strong>${product.name}</strong>
+        <div style="margin-top:4px;color:var(--text-muted);font-size:.85rem;">
+            ${lastItem.quantity} × ${weightText} &nbsp;·&nbsp; ₹${product.price}/kg
+        </div>`;
+    document.getElementById('finalAmount').textContent     = '₹' + lastItem.price.toFixed(2);
+    document.getElementById('payButtonAmount').textContent = '₹' + lastItem.price.toFixed(2);
     document.getElementById('deliveryPin').value = currentUserPin;
 
     window.scrollTo(0, 0);
@@ -891,3 +885,4 @@ window.buyNowFromCard   = buyNowFromCard;
 window.updateCardPrice  = updateCardPrice;
 window.addToCartFromCard = addToCartFromCard;
 window.showCartToast    = showCartToast;
+window.changeCardQty    = changeCardQty;

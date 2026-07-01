@@ -899,3 +899,44 @@ a { text-decoration: none; }
 .checkout-item-detail strong { display: block; color: var(--white); font-size: .875rem; }
 .checkout-item-detail small  { color: var(--text-muted); font-size: .76rem; }
 .checkout-item-price { color: var(--gold); font-weight: 700; font-size: .875rem; white-space: nowrap; }
+
+/* ── CARD QUANTITY SELECTOR ───────────────────────────────── */
+.card-qty-row {
+    margin-bottom: 10px;
+}
+.card-qty-selector {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: #f0f4f8;
+    border: 1.5px solid #d0dce8;
+    border-radius: 8px;
+    overflow: hidden;
+    width: fit-content;
+}
+.card-qty-btn {
+    background: transparent;
+    border: none;
+    color: #0077b6;
+    font-size: .8rem;
+    width: 34px; height: 34px;
+    cursor: pointer;
+    transition: all .2s ease;
+    display: flex; align-items: center; justify-content: center;
+}
+.card-qty-btn:hover {
+    background: #0077b6;
+    color: #fff;
+}
+.card-qty-display {
+    min-width: 36px;
+    text-align: center;
+    font-weight: 800;
+    font-size: .9rem;
+    color: #07192b;
+    border-left: 1.5px solid #d0dce8;
+    border-right: 1.5px solid #d0dce8;
+    padding: 0 8px;
+    line-height: 34px;
+    user-select: none;
+}
