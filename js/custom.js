@@ -614,7 +614,9 @@ function initiateRazorpayPayment(customerDetails) {
         amount: Math.round(currentOrderDetails.total * 100),
         currency: 'INR',
         name: CONFIG.businessName,
-        description: `Order for ${currentProduct.name}`,
+        description: currentOrderDetails.isCartOrder
+            ? `Cart Order (${cartItems.length} item${cartItems.length > 1 ? 's' : ''})`
+            : `Order for ${currentProduct.name}`,
         handler: response => handlePaymentSuccess(response, customerDetails),
         prefill: { name: customerDetails.name, contact: customerDetails.phone },
         notes: {
@@ -648,20 +650,33 @@ function initiateRazorpayPayment(customerDetails) {
 function handlePaymentSuccess(response, customerDetails) {
     document.getElementById('processingIndicator').style.display = 'block';
 
-    const orderId    = 'FFM' + Date.now();
-    const remaining  = deductStock(currentProduct.id, currentOrderDetails.weight, currentOrderDetails.quantity);
-    const weightText = currentOrderDetails.weight >= 1000
-        ? `${currentOrderDetails.weight/1000} kg`
-        : `${currentOrderDetails.weight}g`;
+    const orderId = 'FFM' + Date.now();
+    let productSummary, weightText, remaining;
+
+    if (currentOrderDetails.isCartOrder) {
+        // Deduct stock for every cart item
+        cartItems.forEach(item => {
+            deductStock(item.productId, item.weightGrams || 500, item.quantity);
+        });
+        productSummary = cartItems.map(i => `${i.productName} (${i.quantity}×${i.weight})`).join(', ');
+        weightText     = cartItems.map(i => i.weight).join(', ');
+        remaining      = '';
+    } else {
+        remaining      = deductStock(currentProduct.id, currentOrderDetails.weight, currentOrderDetails.quantity);
+        productSummary = currentProduct.name;
+        weightText     = currentOrderDetails.weight >= 1000
+            ? `${currentOrderDetails.weight/1000} kg`
+            : `${currentOrderDetails.weight}g`;
+    }
 
     const orderData = {
         orderId,
         paymentId:      response.razorpay_payment_id,
-        product:        currentProduct.name,
-        icon:           currentProduct.icon,
+        product:        productSummary,
+        icon:           currentOrderDetails.isCartOrder ? '🛒' : currentProduct.icon,
         weight:         weightText,
         quantity:       currentOrderDetails.quantity,
-        pricePerKg:     currentProduct.price,
+        pricePerKg:     currentOrderDetails.isCartOrder ? 'Multiple' : currentProduct.price,
         amount:         currentOrderDetails.total,
         customerDetails,
         timestamp:      new Date().toISOString(),
@@ -674,7 +689,7 @@ function handlePaymentSuccess(response, customerDetails) {
     setTimeout(() => {
         document.getElementById('processingIndicator').style.display = 'none';
         showSuccessModal(orderId, customerDetails);
-        // Clear cart after payment
+        // Clear cart after successful payment
         cartItems = [];
         cartCount = 0;
         document.getElementById('cartCount').textContent = 0;
@@ -789,38 +804,48 @@ function closeModal() {
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 // ─── CART CHECKOUT ────────────────────────────────────────
-// Uses the LAST item in cart for payment (single product checkout)
+// Shows ALL cart items, charges grand total
 function cartCheckout() {
     if (cartItems.length === 0) return;
 
-    const lastItem = cartItems[cartItems.length - 1];
-    const product  = products.find(p => p.id === lastItem.productId);
-    if (!product) { closeCart(); showMainPage(); return; }
+    // Grand total of all items
+    const grandTotal = cartItems.reduce((sum, item) => sum + item.price, 0);
 
-    currentProduct      = product;
+    // Build summary rows for every cart item
+    let summaryHTML = '';
+    cartItems.forEach(item => {
+        summaryHTML += `
+            <div class="checkout-item-row">
+                <span class="checkout-item-icon">${item.icon}</span>
+                <div class="checkout-item-detail">
+                    <strong>${item.productName}</strong>
+                    <small>${item.quantity} × ${item.weight} &nbsp;·&nbsp; ₹${item.pricePerKg}/kg</small>
+                </div>
+                <span class="checkout-item-price">₹${item.price.toFixed(2)}</span>
+            </div>`;
+    });
+
+    // For Razorpay — use first item as primary product, total = grandTotal
+    const firstItem    = cartItems[0];
+    const firstProduct = products.find(p => p.id === firstItem.productId) || products[0];
+    currentProduct     = firstProduct;
     currentOrderDetails = {
-        isCartOrder: false,
-        product,
-        weight:   lastItem.weightGrams || 500,
-        quantity: lastItem.quantity,
-        total:    lastItem.price
+        isCartOrder: true,
+        weight:      firstItem.weightGrams || 500,
+        quantity:    cartItems.reduce((s, i) => s + i.quantity, 0),
+        total:       grandTotal
     };
-
-    const weightText = lastItem.weight;
 
     closeCart();
 
     document.getElementById('mainPage').style.display    = 'none';
     document.getElementById('paymentPage').style.display = 'block';
 
-    document.getElementById('orderProductIcon').textContent = product.icon;
-    document.getElementById('orderSummary').innerHTML = `
-        <strong>${product.name}</strong>
-        <div style="margin-top:4px;color:var(--text-muted);font-size:.85rem;">
-            ${lastItem.quantity} × ${weightText} &nbsp;·&nbsp; ₹${product.price}/kg
-        </div>`;
-    document.getElementById('finalAmount').textContent     = '₹' + lastItem.price.toFixed(2);
-    document.getElementById('payButtonAmount').textContent = '₹' + lastItem.price.toFixed(2);
+    // Show cart icon when multiple items
+    document.getElementById('orderProductIcon').textContent = cartItems.length > 1 ? '🛒' : firstItem.icon;
+    document.getElementById('orderSummary').innerHTML       = summaryHTML;
+    document.getElementById('finalAmount').textContent      = '₹' + grandTotal.toFixed(2);
+    document.getElementById('payButtonAmount').textContent  = '₹' + grandTotal.toFixed(2);
     document.getElementById('deliveryPin').value = currentUserPin;
 
     window.scrollTo(0, 0);
