@@ -278,18 +278,37 @@ function addToCartFromCard(productId) {
     const total      = product.price * (weight / 1000);
     const weightText = weight >= 1000 ? `${weight/1000}kg` : `${weight}g`;
 
-    cartItems.push({ productName: product.name, icon: product.icon, quantity: 1, weight: weightText, price: total });
-    cartCount = cartItems.length;
+    // Check if same product + same weight already in cart — update it instead of duplicating
+    const existingIdx = cartItems.findIndex(
+        i => i.productName === product.name && i.weight === weightText
+    );
 
-    // Update all badges
+    if (existingIdx >= 0) {
+        // Update quantity and price
+        cartItems[existingIdx].quantity += 1;
+        cartItems[existingIdx].price = product.price * (weight / 1000) * cartItems[existingIdx].quantity;
+    } else {
+        cartItems.push({
+            productId:   product.id,
+            productName: product.name,
+            icon:        product.icon,
+            pricePerKg:  product.price,
+            weight:      weightText,
+            weightGrams: weight,
+            quantity:    1,
+            price:       total
+        });
+    }
+
+    cartCount = cartItems.length;
     document.getElementById('cartCount').textContent = cartCount;
     const badge = document.getElementById('cartCountBadge');
     if (badge) badge.textContent = cartCount;
 
-    // Always re-render cart drawer immediately — whether open or closed
+    // Always re-render immediately
     renderCartDrawer();
 
-    // Show mini toast
+    // Show toast
     showCartToast(product.icon, product.name, weightText, total);
 }
 
@@ -566,12 +585,17 @@ function processPayment() {
 }
 
 function initiateRazorpayPayment(customerDetails) {
+    const totalAmount = currentOrderDetails.total || currentOrderDetails.items?.reduce((s,i)=>s+i.price,0) || 0;
+    const description  = currentOrderDetails.isCartOrder
+        ? `Cart Order - ${currentOrderDetails.items.length} item(s)`
+        : `Order for ${currentProduct.name}`;
+
     const options = {
         key: CONFIG.razorpayKey,
-        amount: currentOrderDetails.total * 100,
+        amount: Math.round(totalAmount * 100),
         currency: 'INR',
         name: CONFIG.businessName,
-        description: `Order for ${currentProduct.name}`,
+        description,
         handler: response => handlePaymentSuccess(response, customerDetails),
         prefill: { name: customerDetails.name, contact: customerDetails.phone },
         notes: {
@@ -605,29 +629,58 @@ function initiateRazorpayPayment(customerDetails) {
 function handlePaymentSuccess(response, customerDetails) {
     document.getElementById('processingIndicator').style.display = 'block';
 
-    const remaining = deductStock(currentProduct.id, currentOrderDetails.weight, currentOrderDetails.quantity);
-    const orderId   = 'FFM' + Date.now();
-    const weightText = currentOrderDetails.weight >= 1000
-        ? `${currentOrderDetails.weight/1000} kg`
-        : `${currentOrderDetails.weight}g`;
+    const orderId = 'FFM' + Date.now();
+    let remaining = 0;
+    let productSummary = '';
+    let weightText = '';
+    let totalAmount = 0;
+
+    if (currentOrderDetails.isCartOrder) {
+        // Deduct stock for each cart item
+        currentOrderDetails.items.forEach(item => {
+            deductStock(item.productId, item.weightGrams || 500, item.quantity);
+        });
+        totalAmount    = currentOrderDetails.items.reduce((s,i) => s+i.price, 0);
+        productSummary = currentOrderDetails.items.map(i => `${i.productName} ${i.quantity}×${i.weight}`).join(', ');
+        weightText     = currentOrderDetails.items.map(i => i.weight).join(', ');
+    } else {
+        remaining   = deductStock(currentProduct.id, currentOrderDetails.weight, currentOrderDetails.quantity);
+        totalAmount = currentOrderDetails.total;
+        weightText  = currentOrderDetails.weight >= 1000
+            ? `${currentOrderDetails.weight/1000} kg`
+            : `${currentOrderDetails.weight}g`;
+        productSummary = currentProduct.name;
+    }
 
     const orderData = {
-        orderId, paymentId: response.razorpay_payment_id,
-        product: currentProduct.name, icon: currentProduct.icon,
-        weight: weightText, quantity: currentOrderDetails.quantity,
-        pricePerKg: currentProduct.price,
-        amount: currentOrderDetails.total,
-        customerDetails, timestamp: new Date().toISOString(),
+        orderId,
+        paymentId:      response.razorpay_payment_id,
+        product:        productSummary,
+        icon:           currentOrderDetails.isCartOrder ? '🛒' : currentProduct.icon,
+        weight:         weightText,
+        quantity:       currentOrderDetails.isCartOrder
+                            ? currentOrderDetails.items.reduce((s,i)=>s+i.quantity, 0)
+                            : currentOrderDetails.quantity,
+        pricePerKg:     currentOrderDetails.isCartOrder ? 'Multiple' : currentProduct.price,
+        amount:         totalAmount,
+        customerDetails,
+        timestamp:      new Date().toISOString(),
         stockRemaining: remaining
     };
 
-    // ⑤ Send WhatsApp bill to customer + full details to admin email
     sendWhatsAppBill(orderData);
     sendAdminEmail(orderData);
 
     setTimeout(() => {
         document.getElementById('processingIndicator').style.display = 'none';
         showSuccessModal(orderId, customerDetails);
+        // Clear cart after successful payment
+        cartItems = [];
+        cartCount = 0;
+        document.getElementById('cartCount').textContent = 0;
+        const badge = document.getElementById('cartCountBadge');
+        if (badge) badge.textContent = 0;
+        renderCartDrawer();
     }, 2000);
 }
 
@@ -736,50 +789,44 @@ function closeModal() {
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 // ─── CART CHECKOUT ────────────────────────────────────────
-// When user clicks "Proceed to Checkout" from cart drawer
 function cartCheckout() {
     if (cartItems.length === 0) return;
 
-    // Use the last added item as the current order
-    const lastItem = cartItems[cartItems.length - 1];
-    const product  = products.find(p => p.name === lastItem.productName);
-    if (!product) {
-        alert('Please select a product to checkout.');
-        closeCart();
-        showMainPage();
-        return;
-    }
+    // Calculate real grand total across ALL cart items
+    const grandTotal = cartItems.reduce((sum, item) => sum + item.price, 0);
 
-    // Parse weight from string like "500g" or "1kg"
-    let weightGrams = 500;
-    if (lastItem.weight.includes('kg')) {
-        weightGrams = parseFloat(lastItem.weight) * 1000;
-    } else {
-        weightGrams = parseInt(lastItem.weight);
-    }
+    // Build order summary HTML for all items
+    let summaryHTML = '';
+    cartItems.forEach(item => {
+        summaryHTML += `
+            <div class="checkout-item-row">
+                <span class="checkout-item-icon">${item.icon}</span>
+                <div class="checkout-item-detail">
+                    <strong>${item.productName}</strong>
+                    <small>${item.quantity} × ${item.weight} · ₹${(item.pricePerKg || 0)}/kg</small>
+                </div>
+                <span class="checkout-item-price">₹${item.price.toFixed(2)}</span>
+            </div>`;
+    });
 
-    // Set currentProduct & currentOrderDetails so payment page works
-    currentProduct = product;
-    const quantity  = lastItem.quantity;
-    const total     = lastItem.price;
-    currentOrderDetails = { product, weight: weightGrams, quantity, total };
-
-    const weightText = weightGrams >= 1000 ? `${weightGrams/1000}kg` : `${weightGrams}g`;
+    // Store cart order for Razorpay
+    currentOrderDetails = {
+        isCartOrder: true,
+        items:       cartItems,
+        total:       grandTotal
+    };
+    // currentProduct used for Razorpay description — use first item
+    currentProduct = products.find(p => p.id === cartItems[0].productId) || products[0];
 
     closeCart();
 
-    // Show payment page
     document.getElementById('mainPage').style.display    = 'none';
     document.getElementById('paymentPage').style.display = 'block';
 
-    document.getElementById('orderProductIcon').textContent = product.icon;
-    document.getElementById('orderSummary').innerHTML = `
-        <strong>${product.name}</strong>
-        <div style="margin-top:4px;color:var(--text-muted);font-size:.85rem;">
-            ${quantity} × ${weightText} &nbsp;·&nbsp; ₹${product.price}/kg
-        </div>`;
-    document.getElementById('finalAmount').textContent     = '₹' + total.toFixed(2);
-    document.getElementById('payButtonAmount').textContent = '₹' + total.toFixed(2);
+    document.getElementById('orderProductIcon').textContent = cartItems.length > 1 ? '🛒' : cartItems[0].icon;
+    document.getElementById('orderSummary').innerHTML = summaryHTML;
+    document.getElementById('finalAmount').textContent     = '₹' + grandTotal.toFixed(2);
+    document.getElementById('payButtonAmount').textContent = '₹' + grandTotal.toFixed(2);
     document.getElementById('deliveryPin').value = currentUserPin;
 
     window.scrollTo(0, 0);
