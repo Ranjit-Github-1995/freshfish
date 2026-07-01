@@ -811,3 +811,78 @@ a { text-decoration: none; }
 
 /* remove old product-actions since cards now have inline buy */
 .product-actions { display: none; }
+
+/* ── CARD TWO-BUTTON ACTIONS ──────────────────────────────── */
+.card-action-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.btn-card-cart {
+    background: transparent;
+    border: 1.5px solid #0077b6;
+    color: #0077b6;
+    font-weight: 700; font-size: .78rem;
+    padding: 10px 6px;
+    border-radius: var(--radius-sm);
+    cursor: pointer; transition: all .22s ease;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.btn-card-cart:hover {
+    background: #0077b6;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,119,182,.3);
+}
+
+.btn-card-buy {
+    background: linear-gradient(135deg, #06d6a0, #0077b6);
+    border: none;
+    color: #fff;
+    font-weight: 700; font-size: .78rem;
+    padding: 10px 6px;
+    border-radius: var(--radius-sm);
+    cursor: pointer; transition: all .22s ease;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.btn-card-buy:hover {
+    opacity: .88;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(6,214,160,.4);
+}
+
+/* Price animation */
+.card-total-price {
+    font-size: 1.1rem; font-weight: 800; color: #b8860b;
+    transition: transform .25s ease, color .25s ease;
+    display: inline-block;
+}
+
+/* ── CART TOAST NOTIFICATION ──────────────────────────────── */
+.cart-toast {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--ocean-card);
+    border: 1px solid rgba(6,214,160,.35);
+    border-radius: var(--radius-md);
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.4);
+    z-index: 99999;
+    min-width: 260px;
+    opacity: 0;
+    transition: all .35s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+}
+.cart-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.toast-icon { font-size: 1.8rem; flex-shrink: 0; }
+.toast-info { flex: 1; }
+.toast-info strong { display: block; color: var(--white); font-size: .88rem; }
+.toast-info small  { color: var(--text-muted); font-size: .76rem; }
+.toast-check { color: var(--success); font-size: 1.3rem; flex-shrink: 0; }
