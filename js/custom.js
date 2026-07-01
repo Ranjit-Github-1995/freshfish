@@ -373,24 +373,24 @@ function createProductCard(product) {
             : `<div class="badge-fresh">Fresh Daily</div>`;
 
     const button = outOfStock
-        ? `<button class="btn btn-out-of-stock w-100" disabled>
+        ? `<button class="btn-out-of-stock" disabled>
                <i class="fas fa-times-circle"></i> Out of Stock
            </button>`
-        : `<button class="btn btn-add-cart w-100" onclick="showDetail(${product.id})">
+        : `<button class="btn-add-cart" onclick="showDetail(${product.id})">
                <i class="fas fa-cart-plus"></i> Add to Cart
            </button>`;
 
     return `
-        <div class="col-md-3 col-sm-6">
+        <div class="col-lg-3 col-md-4 col-sm-6">
             <div class="product-card ${outOfStock ? 'card-out-of-stock' : ''}">
                 ${badge}
-                <div class="product-image">
-                    <span style="font-size: 4rem;">${product.icon}</span>
+                <div class="product-image-wrap">
+                    <span class="product-emoji">${product.icon}</span>
                 </div>
-                <div class="card-body p-3">
-                    <h5 class="card-title">${product.name}</h5>
-                    <p class="text-muted small">${product.description}</p>
-                    <div class="price-tag mb-3">₹${product.price} per kg</div>
+                <div class="product-body">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-desc">${product.description}</div>
+                    <div class="price-tag">₹${product.price} per kg</div>
                     ${button}
                 </div>
             </div>
