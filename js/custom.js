@@ -10,7 +10,7 @@ const CONFIG = {
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
     adminEmail: 'fresheverydayfish@gmail.com',
-    webhookUrl: 'https://script.google.com/macros/s/AKfycbys3DUAa3XR4_7BPf1qJk20krQikK_y37DVbBh1C9e3j-vFfYENvHI1JRm2alnVViBr/exec',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycby7oRvxZmoBwgCHS89FousmMSUQQ8ckrWczU6J3GiTV5vb2wkj0aaEPjYESS0T66AUN/exec',
     whatsapp: { adminPhone: '7890152617', enableNotifications: true }
 };
 
@@ -613,8 +613,7 @@ function handlePaymentSuccess(response, customerDetails) {
         stockRemaining: remaining
     };
 
-    sendWhatsAppBill(orderData);
-    sendAdminEmail(orderData);
+    sendOrderToServer(orderData);
 
     setTimeout(() => {
         document.getElementById('processingIndicator').style.display = 'none';
@@ -628,65 +627,16 @@ function handlePaymentSuccess(response, customerDetails) {
     }, 2000);
 }
 
-// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
-function sendWhatsAppBill(orderData) {
+// ─── SINGLE ORDER NOTIFICATION (saves to sheet ONCE + sends email ONCE) ───────
+function sendOrderToServer(orderData) {
     const d = orderData;
-    const billMessage =
-`🐟 *FRESH FISH MARKET*
-━━━━━━━━━━━━━━━━━━
-🧾 *ORDER BILL*
-━━━━━━━━━━━━━━━━━━
-Order ID   : ${d.orderId}
-Payment ID : ${d.paymentId}
-Date       : ${new Date().toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'})}
-Time       : ${new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'})}
-━━━━━━━━━━━━━━━━━━
-${d.icon} *${d.product}*
-Qty        : ${d.quantity} × ${d.weight}
-Rate       : ₹${d.pricePerKg} per kg
-━━━━━━━━━━━━━━━━━━
-💰 *TOTAL : ₹${d.amount.toFixed(2)}*
-━━━━━━━━━━━━━━━━━━
-📍 Delivery Address:
-${d.customerDetails.address}
-${d.customerDetails.landmark ? '📌 ' + d.customerDetails.landmark : ''}
-PIN: ${d.customerDetails.pin}
-━━━━━━━━━━━━━━━━━━
-✅ Payment received successfully
-🚚 Delivery: Tomorrow morning
-━━━━━━━━━━━━━━━━━━
-Thank you, ${d.customerDetails.name}! 🙏`;
 
     fetch(CONFIG.webhookUrl, {
-        method: 'POST', mode: 'no-cors',
+        method: 'POST',
+        mode:   'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            type: 'whatsapp_bill',
-            customerPhone: d.customerDetails.phone,
-            customerName:  d.customerDetails.name,
-            billMessage,
-            orderId:       d.orderId,
-            paymentId:     d.paymentId,
-            product:       d.product,
-            quantity:      d.quantity,
-            weight:        d.weight,
-            amount:        d.amount.toFixed(2),
-            address:       d.customerDetails.address,
-            landmark:      d.customerDetails.landmark,
-            pin:           d.customerDetails.pin,
-            timestamp:     d.timestamp
-        })
-    }).catch(e => console.error('❌ WhatsApp error:', e));
-}
-
-function sendAdminEmail(orderData) {
-    const d = orderData;
-    fetch(CONFIG.webhookUrl, {
-        method: 'POST', mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            type:           'admin_email',
-            adminEmail:     CONFIG.adminEmail,
+            type:           'order_complete',
             orderId:        d.orderId,
             paymentId:      d.paymentId,
             customerName:   d.customerDetails.name,
@@ -697,12 +647,14 @@ function sendAdminEmail(orderData) {
             pricePerKg:     d.pricePerKg,
             amount:         d.amount.toFixed(2),
             address:        d.customerDetails.address,
-            landmark:       d.customerDetails.landmark || 'N/A',
+            landmark:       d.customerDetails.landmark || '',
             pin:            d.customerDetails.pin,
             stockRemaining: d.stockRemaining,
             timestamp:      d.timestamp
         })
-    }).catch(e => console.error('❌ Admin email error:', e));
+    })
+    .then(() => console.log('✅ Order sent to server'))
+    .catch(e  => console.error('❌ Server error:', e));
 }
 
 // ─── MODALS ───────────────────────────────────────────────────────────────────
