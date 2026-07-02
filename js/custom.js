@@ -10,7 +10,7 @@ const CONFIG = {
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
     adminEmail: 'fresheverydayfish@gmail.com',
-    webhookUrl: 'https://script.google.com/macros/s/AKfycby7oRvxZmoBwgCHS89FousmMSUQQ8ckrWczU6J3GiTV5vb2wkj0aaEPjYESS0T66AUN/exec',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycbyKmcr_72OksKxFbSFI26Rd5RMjAHXWndySkN13TPayjy5I739hQVJ6NIDqBragkoip/exec',
     whatsapp: { adminPhone: '7890152617', enableNotifications: true }
 };
 
