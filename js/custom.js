@@ -5,7 +5,7 @@ const CONFIG = {
     validPinCodes: ['712503', '712502', '712148'],
     bannerStartHour: 14,
     sessionStorageKey: 'userPinCode',
-    razorpayKey: 'rzp_live_RRtsemTmyPcpeX', // fallback only — primary key stored in Google Apps Script
+    razorpayKey: 'rzp_live_T8a5xzy3zVLPLR', // fallback only — primary key stored in Google Apps Script
     businessName: 'Fresh Fish Market',
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
