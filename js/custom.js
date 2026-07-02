@@ -631,30 +631,56 @@ function handlePaymentSuccess(response, customerDetails) {
 function sendOrderToServer(orderData) {
     const d = orderData;
 
-    fetch(CONFIG.webhookUrl, {
-        method: 'POST',
-        mode:   'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            type:           'order_complete',
-            orderId:        d.orderId,
-            paymentId:      d.paymentId,
-            customerName:   d.customerDetails.name,
-            customerPhone:  d.customerDetails.phone,
-            product:        d.product,
-            quantity:       d.quantity,
-            weight:         d.weight,
-            pricePerKg:     d.pricePerKg,
-            amount:         d.amount.toFixed(2),
-            address:        d.customerDetails.address,
-            landmark:       d.customerDetails.landmark || '',
-            pin:            d.customerDetails.pin,
-            stockRemaining: d.stockRemaining,
-            timestamp:      d.timestamp
-        })
-    })
-    .then(() => console.log('✅ Order sent to server'))
-    .catch(e  => console.error('❌ Server error:', e));
+    const payload = {
+        type:           'order_complete',
+        orderId:        d.orderId,
+        paymentId:      d.paymentId,
+        customerName:   d.customerDetails.name,
+        customerPhone:  d.customerDetails.phone,
+        product:        d.product,
+        quantity:       d.quantity,
+        weight:         d.weight,
+        pricePerKg:     d.pricePerKg,
+        amount:         d.amount.toFixed(2),
+        address:        d.customerDetails.address,
+        landmark:       d.customerDetails.landmark || '',
+        pin:            d.customerDetails.pin,
+        stockRemaining: d.stockRemaining,
+        timestamp:      d.timestamp
+    };
+
+    // Use GET request with params — avoids CORS issues completely
+    const params = new URLSearchParams({
+        type:           payload.type,
+        orderId:        payload.orderId,
+        paymentId:      payload.paymentId,
+        customerName:   payload.customerName,
+        customerPhone:  payload.customerPhone,
+        product:        payload.product,
+        quantity:       payload.quantity,
+        weight:         payload.weight,
+        pricePerKg:     payload.pricePerKg,
+        amount:         payload.amount,
+        address:        payload.address,
+        landmark:       payload.landmark,
+        pin:            payload.pin,
+        stockRemaining: payload.stockRemaining || '',
+        timestamp:      payload.timestamp
+    });
+
+    fetch(CONFIG.webhookUrl + '?' + params.toString())
+        .then(r => r.json())
+        .then(res => console.log('✅ Order sent:', res))
+        .catch(e  => {
+            // Fallback to POST no-cors if GET fails
+            console.log('GET failed, trying POST...');
+            fetch(CONFIG.webhookUrl, {
+                method:  'POST',
+                mode:    'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(payload)
+            }).catch(e2 => console.error('❌ Both attempts failed:', e2));
+        });
 }
 
 // ─── MODALS ───────────────────────────────────────────────────────────────────
