@@ -5,11 +5,12 @@ const CONFIG = {
     validPinCodes: ['712503', '712502', '712148'],
     bannerStartHour: 14,
     sessionStorageKey: 'userPinCode',
-    razorpayKey: 'rzp_live_RRtsemTmyPcpeX',
+    razorpayKey: 'rzp_live_T8a5xzy3zVLPLR', // fallback only — primary key stored in Google Apps Script
     businessName: 'Fresh Fish Market',
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
     adminEmail: 'fresheverydayfish@gmail.com',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycbzBkn-8Y8-4Esjwlb1-sPfRWeMUutJ5LFFAl-ruUgggHZJWkYboJdNpN4Vo5_393ow4/exec',
     whatsapp: { adminPhone: '7890152617', enableNotifications: true }
 };
 
@@ -48,25 +49,25 @@ function isOutOfStock(id) { return getStock(id) <= 0; }
 
 // ─── PRODUCTS ─────────────────────────────────────────────────────────────────
 const products = [
-    { id:1,  name:'Rohu Fish',   price:1,    description:'Fresh water fish, rich in omega-3',      icon:'🐟', longDescription:'Rohu is one of the most popular freshwater fish in Bengali cuisine. Known for its tender meat and mild flavor.', origin:'Freshwater ponds and rivers of West Bengal', bestFor:'Bengali curry, Rohu Kalia, Fish fry', calories:'97',  protein:'16.4g', fat:'1.4g',  omega3:'0.6g', calcium:'45mg',  iron:'1.2mg' },
+    { id:1,  name:'Rohu Fish',   price:1,    description:'Fresh water fish, rich in omega-3',       icon:'🐟', longDescription:'Rohu is one of the most popular freshwater fish in Bengali cuisine. Known for its tender meat and mild flavor.', origin:'Freshwater ponds and rivers of West Bengal', bestFor:'Bengali curry, Rohu Kalia, Fish fry', calories:'97',  protein:'16.4g', fat:'1.4g',  omega3:'0.6g', calcium:'45mg',  iron:'1.2mg' },
     { id:2,  name:'Katla Fish',  price:320,  description:'Large freshwater fish, perfect for curry', icon:'🐠', longDescription:'Katla is a prized freshwater fish known for its large size and rich taste.', origin:'Local fish farms and rivers', bestFor:'Katla Kalia, Macher Jhol, Steam preparations', calories:'111', protein:'17.8g', fat:'2.3g',  omega3:'0.8g', calcium:'60mg',  iron:'1.5mg' },
-    { id:3,  name:'Hilsa Fish',  price:1140, description:'Premium Bengali delicacy',                icon:'🐟', longDescription:'Hilsa (Ilish) is the queen of fish in Bengali cuisine.', origin:'Bay of Bengal and Padma River', bestFor:'Bhapa Ilish, Ilish Paturi, Sorshe Ilish', calories:'273', protein:'21.8g', fat:'19.5g', omega3:'2.8g', calcium:'180mg', iron:'2.1mg' },
-    { id:4,  name:'Pomfret',     price:850,  description:'Sea fish with delicate flavor',           icon:'🐠', longDescription:'Pomfret is a premium sea fish with soft, white flesh and minimal bones.', origin:'Arabian Sea and Bay of Bengal', bestFor:'Tandoori, Pan fry, Butter garlic preparations', calories:'96',  protein:'19g',   fat:'1.7g',  omega3:'1.1g', calcium:'80mg',  iron:'0.9mg' },
-    { id:5,  name:'Prawns',      price:450,  description:'Fresh tiger prawns',                      icon:'🦐', longDescription:'Large tiger prawns are succulent and sweet.', origin:'Coastal waters of Bay of Bengal', bestFor:'Prawn curry, Tandoori prawns, Stir fry', calories:'85',  protein:'20g',   fat:'0.5g',  omega3:'0.3g', calcium:'70mg',  iron:'0.5mg' },
-    { id:6,  name:'Salmon',      price:1850, description:'Imported Atlantic salmon',                icon:'🐟', longDescription:'Premium Atlantic salmon is rich in omega-3 fatty acids.', origin:'Imported from Norway/Scotland', bestFor:'Grilled, Sushi, Teriyaki, Pan-seared', calories:'208', protein:'20g',   fat:'13.4g', omega3:'3.5g', calcium:'12mg',  iron:'0.8mg' },
-    { id:7,  name:'Tilapia',     price:180,  description:'Farm fresh tilapia',                      icon:'🐠', longDescription:'Tilapia is a mild-flavored, lean fish that is versatile and budget-friendly.', origin:'Local aquaculture farms', bestFor:'Fish fry, Curry, Grilled preparations', calories:'96',  protein:'20.1g', fat:'1.7g',  omega3:'0.2g', calcium:'10mg',  iron:'0.6mg' },
-    { id:8,  name:'Sea Bass',    price:680,  description:'Premium sea bass',                        icon:'🐟', longDescription:'Sea bass has firm, white flesh with a mild, delicate flavor.', origin:'Deep sea waters', bestFor:'Steamed, Grilled, Baked preparations', calories:'124', protein:'23.6g', fat:'2.6g',  omega3:'1.5g', calcium:'92mg',  iron:'1.1mg' },
-    { id:9,  name:'Crab',        price:750,  description:'Fresh mud crabs',                         icon:'🦀', longDescription:'Fresh mud crabs are sweet and succulent.', origin:'Mangrove areas and coastal regions', bestFor:'Crab curry, Butter garlic crab, Crab cakes', calories:'87',  protein:'18.1g', fat:'1.1g',  omega3:'0.4g', calcium:'89mg',  iron:'0.7mg' },
-    { id:10, name:'Lobster',     price:2850, description:'Live lobster',                            icon:'🦞', longDescription:'Premium live lobster is the ultimate luxury seafood.', origin:'Deep sea waters', bestFor:'Thermidor, Grilled, Butter preparations', calories:'90',  protein:'19g',   fat:'0.9g',  omega3:'0.2g', calcium:'96mg',  iron:'0.3mg' },
-    { id:11, name:'Surmai',      price:920,  description:'King fish steaks',                        icon:'🐟', longDescription:'Surmai (King Fish) is a popular sea fish with firm texture.', origin:'Arabian Sea and Bay of Bengal', bestFor:'Fish steaks, Tandoori, Pan fry', calories:'139', protein:'22g',   fat:'5.2g',  omega3:'1.8g', calcium:'34mg',  iron:'1.7mg' },
-    { id:12, name:'Bangda',      price:280,  description:'Indian mackerel',                         icon:'🐠', longDescription:'Bangda (Indian Mackerel) is an oily fish with strong flavor.', origin:'Coastal waters of India', bestFor:'Rava fry, Curry, Recheado preparations', calories:'205', protein:'18.6g', fat:'13.9g', omega3:'2.6g', calcium:'12mg',  iron:'1.6mg' }
+    { id:3,  name:'Hilsa Fish',  price:1140, description:'Premium Bengali delicacy',                 icon:'🐟', longDescription:'Hilsa (Ilish) is the queen of fish in Bengali cuisine.', origin:'Bay of Bengal and Padma River', bestFor:'Bhapa Ilish, Ilish Paturi, Sorshe Ilish', calories:'273', protein:'21.8g', fat:'19.5g', omega3:'2.8g', calcium:'180mg', iron:'2.1mg' },
+    { id:4,  name:'Pomfret',     price:850,  description:'Sea fish with delicate flavor',            icon:'🐠', longDescription:'Pomfret is a premium sea fish with soft, white flesh and minimal bones.', origin:'Arabian Sea and Bay of Bengal', bestFor:'Tandoori, Pan fry, Butter garlic preparations', calories:'96',  protein:'19g',   fat:'1.7g',  omega3:'1.1g', calcium:'80mg',  iron:'0.9mg' },
+    { id:5,  name:'Prawns',      price:450,  description:'Fresh tiger prawns',                       icon:'🦐', longDescription:'Large tiger prawns are succulent and sweet.', origin:'Coastal waters of Bay of Bengal', bestFor:'Prawn curry, Tandoori prawns, Stir fry', calories:'85',  protein:'20g',   fat:'0.5g',  omega3:'0.3g', calcium:'70mg',  iron:'0.5mg' },
+    { id:6,  name:'Salmon',      price:1850, description:'Imported Atlantic salmon',                 icon:'🐟', longDescription:'Premium Atlantic salmon is rich in omega-3 fatty acids.', origin:'Imported from Norway/Scotland', bestFor:'Grilled, Sushi, Teriyaki, Pan-seared', calories:'208', protein:'20g',   fat:'13.4g', omega3:'3.5g', calcium:'12mg',  iron:'0.8mg' },
+    { id:7,  name:'Tilapia',     price:180,  description:'Farm fresh tilapia',                       icon:'🐠', longDescription:'Tilapia is a mild-flavored, lean fish that is versatile and budget-friendly.', origin:'Local aquaculture farms', bestFor:'Fish fry, Curry, Grilled preparations', calories:'96',  protein:'20.1g', fat:'1.7g',  omega3:'0.2g', calcium:'10mg',  iron:'0.6mg' },
+    { id:8,  name:'Sea Bass',    price:680,  description:'Premium sea bass',                         icon:'🐟', longDescription:'Sea bass has firm, white flesh with a mild, delicate flavor.', origin:'Deep sea waters', bestFor:'Steamed, Grilled, Baked preparations', calories:'124', protein:'23.6g', fat:'2.6g',  omega3:'1.5g', calcium:'92mg',  iron:'1.1mg' },
+    { id:9,  name:'Crab',        price:750,  description:'Fresh mud crabs',                          icon:'🦀', longDescription:'Fresh mud crabs are sweet and succulent.', origin:'Mangrove areas and coastal regions', bestFor:'Crab curry, Butter garlic crab, Crab cakes', calories:'87',  protein:'18.1g', fat:'1.1g',  omega3:'0.4g', calcium:'89mg',  iron:'0.7mg' },
+    { id:10, name:'Lobster',     price:2850, description:'Live lobster',                             icon:'🦞', longDescription:'Premium live lobster is the ultimate luxury seafood.', origin:'Deep sea waters', bestFor:'Thermidor, Grilled, Butter preparations', calories:'90',  protein:'19g',   fat:'0.9g',  omega3:'0.2g', calcium:'96mg',  iron:'0.3mg' },
+    { id:11, name:'Surmai',      price:920,  description:'King fish steaks',                         icon:'🐟', longDescription:'Surmai (King Fish) is a popular sea fish with firm texture.', origin:'Arabian Sea and Bay of Bengal', bestFor:'Fish steaks, Tandoori, Pan fry', calories:'139', protein:'22g',   fat:'5.2g',  omega3:'1.8g', calcium:'34mg',  iron:'1.7mg' },
+    { id:12, name:'Bangda',      price:280,  description:'Indian mackerel',                          icon:'🐠', longDescription:'Bangda (Indian Mackerel) is an oily fish with strong flavor.', origin:'Coastal waters of India', bestFor:'Rava fry, Curry, Recheado preparations', calories:'205', protein:'18.6g', fat:'13.9g', omega3:'2.6g', calcium:'12mg',  iron:'1.6mg' }
 ];
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
-let currentProduct    = null;
-let cartCount         = 0;
-let currentUserPin    = '';
-let cartItems         = [];   // persistent cart across products
+let currentProduct      = null;
+let cartCount           = 0;
+let currentUserPin      = '';
+let cartItems           = [];
 let currentOrderDetails = null;
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
@@ -95,9 +96,8 @@ function checkTimeAndShowBanner() {
     const show = new Date().getHours() >= CONFIG.bannerStartHour;
     document.getElementById('deliveryBanner').style.display = show ? 'flex' : 'none';
     document.getElementById('navbar').classList.toggle('with-banner', show);
-    // Adjust cart drawer top to stay below navbar
     const navbar = document.getElementById('navbar');
-    const navH = navbar.offsetHeight + (show ? 28 : 0);
+    const navH   = navbar.offsetHeight + (show ? 28 : 0);
     document.getElementById('cartDrawer').style.top = navH + 'px';
 }
 
@@ -119,9 +119,6 @@ function setupEventListeners() {
             if (this.value.length !== 10) this.classList.remove('is-valid');
         });
     }
-    document.querySelectorAll('input[name="weight"]').forEach(i => i.addEventListener('change', calculateTotal));
-    const qtyInput = document.getElementById('quantity');
-    if (qtyInput) qtyInput.addEventListener('input', calculateTotal);
 }
 
 // ─── PIN ──────────────────────────────────────────────────────────────────────
@@ -143,7 +140,7 @@ function verifyPinCode() {
         loadProducts();
     } else {
         document.getElementById('pinModal').style.display = 'none';
-        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('overlay').style.display  = 'block';
         document.getElementById('notAvailableModal').style.display = 'block';
     }
 }
@@ -193,26 +190,21 @@ function createProductCard(product) {
         : `<div class="product-body">
                <div class="product-name">${product.name}</div>
                <div class="product-desc">${product.description}</div>
-
                <div class="card-rate-label"><i class="fas fa-tag me-1"></i>₹${product.price}/kg</div>
-
                <div class="card-weight-selector">
                    <label class="card-weight-label"><i class="fas fa-weight me-1"></i>Select Weight</label>
                    <div class="card-weight-btns">
                        <input type="radio" name="weight_${product.id}" id="w${product.id}_500" value="500" checked
                               onchange="updateCardPrice(${product.id}, ${product.price})">
                        <label class="card-w-btn" for="w${product.id}_500">500g</label>
-
                        <input type="radio" name="weight_${product.id}" id="w${product.id}_750" value="750"
                               onchange="updateCardPrice(${product.id}, ${product.price})">
                        <label class="card-w-btn" for="w${product.id}_750">750g</label>
-
                        <input type="radio" name="weight_${product.id}" id="w${product.id}_1000" value="1000"
                               onchange="updateCardPrice(${product.id}, ${product.price})">
                        <label class="card-w-btn" for="w${product.id}_1000">1 kg</label>
                    </div>
                </div>
-
                <div class="card-qty-row">
                    <label class="card-weight-label"><i class="fas fa-sort-numeric-up me-1"></i>Quantity</label>
                    <div class="card-qty-selector">
@@ -225,12 +217,10 @@ function createProductCard(product) {
                        </button>
                    </div>
                </div>
-
                <div class="card-price-row">
                    <span class="card-total-label"><i class="fas fa-receipt me-1"></i>Total</span>
                    <span class="card-total-price" id="card_price_${product.id}">₹${defaultPrice}</span>
                </div>
-
                <div class="card-action-btns">
                    <button class="btn-card-cart" onclick="addToCartFromCard(${product.id})">
                        <i class="fas fa-cart-plus me-1"></i>Add to Cart
@@ -253,7 +243,7 @@ function createProductCard(product) {
         </div>`;
 }
 
-// Update price when weight or qty changes
+// ─── CARD PRICE / QTY ─────────────────────────────────────────────────────────
 function updateCardPrice(productId, pricePerKg) {
     const selected = document.querySelector(`input[name="weight_${productId}"]:checked`);
     const weight   = selected ? parseInt(selected.value) : 500;
@@ -262,14 +252,12 @@ function updateCardPrice(productId, pricePerKg) {
     const total    = pricePerKg * (weight / 1000) * qty;
     const priceEl  = document.getElementById('card_price_' + productId);
     if (priceEl) {
-        priceEl.textContent    = '₹' + total.toFixed(2);
+        priceEl.textContent     = '₹' + total.toFixed(2);
         priceEl.style.transform = 'scale(1.15)';
         priceEl.style.color     = '#06d6a0';
         setTimeout(() => { priceEl.style.transform = 'scale(1)'; priceEl.style.color = ''; }, 300);
     }
 }
-
-// Change quantity on card
 function changeCardQty(productId, delta, pricePerKg) {
     const qtyEl = document.getElementById('card_qty_' + productId);
     if (!qtyEl) return;
@@ -279,12 +267,9 @@ function changeCardQty(productId, delta, pricePerKg) {
     updateCardPrice(productId, pricePerKg);
 }
 
-// Add to cart — stays on main page so user can add more
+// ─── ADD TO CART ──────────────────────────────────────────────────────────────
 function addToCartFromCard(productId) {
-    if (isOutOfStock(productId)) {
-        alert('Sorry! This product is out of stock for today.');
-        return;
-    }
+    if (isOutOfStock(productId)) { alert('Sorry! This product is out of stock for today.'); return; }
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
@@ -295,32 +280,18 @@ function addToCartFromCard(productId) {
     const stockLeft = getStock(productId);
     const soldKg    = (weight / 1000) * quantity;
 
-    if (soldKg > stockLeft) {
-        alert(`Only ${stockLeft.toFixed(1)} kg available today.`);
-        return;
-    }
+    if (soldKg > stockLeft) { alert(`Only ${stockLeft.toFixed(1)} kg available today.`); return; }
 
     const total      = product.price * (weight / 1000) * quantity;
     const weightText = weight >= 1000 ? `${weight/1000}kg` : `${weight}g`;
 
-    // Same product + same weight → update, else add new
-    const existingIdx = cartItems.findIndex(
-        i => i.productName === product.name && i.weight === weightText
-    );
+    const existingIdx = cartItems.findIndex(i => i.productName === product.name && i.weight === weightText);
     if (existingIdx >= 0) {
         cartItems[existingIdx].quantity += quantity;
         cartItems[existingIdx].price = product.price * (weight / 1000) * cartItems[existingIdx].quantity;
     } else {
-        cartItems.push({
-            productId:   product.id,
-            productName: product.name,
-            icon:        product.icon,
-            pricePerKg:  product.price,
-            weight:      weightText,
-            weightGrams: weight,
-            quantity,
-            price:       total
-        });
+        cartItems.push({ productId: product.id, productName: product.name, icon: product.icon,
+            pricePerKg: product.price, weight: weightText, weightGrams: weight, quantity, price: total });
     }
 
     cartCount = cartItems.length;
@@ -328,19 +299,13 @@ function addToCartFromCard(productId) {
     const badge = document.getElementById('cartCountBadge');
     if (badge) badge.textContent = cartCount;
 
-    // Always re-render immediately
     renderCartDrawer();
-
-    // Open cart drawer so user sees their item
     openCart();
 }
 
-// Buy Now — goes straight to payment page
+// ─── BUY NOW ──────────────────────────────────────────────────────────────────
 function buyNowFromCard(productId) {
-    if (isOutOfStock(productId)) {
-        alert('Sorry! This product is out of stock for today.');
-        return;
-    }
+    if (isOutOfStock(productId)) { alert('Sorry! This product is out of stock for today.'); return; }
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
@@ -351,18 +316,14 @@ function buyNowFromCard(productId) {
     const stockLeft = getStock(productId);
     const soldKg    = (weight / 1000) * quantity;
 
-    if (soldKg > stockLeft) {
-        alert(`Only ${stockLeft.toFixed(1)} kg available today.`);
-        return;
-    }
+    if (soldKg > stockLeft) { alert(`Only ${stockLeft.toFixed(1)} kg available today.`); return; }
 
     const total      = product.price * (weight / 1000) * quantity;
     const weightText = weight >= 1000 ? `${weight/1000}kg` : `${weight}g`;
 
     currentProduct      = product;
-    currentOrderDetails = { product, weight, quantity, total };
+    currentOrderDetails = { isCartOrder: false, product, weight, quantity, total };
 
-    // Show payment page directly
     document.getElementById('mainPage').style.display    = 'none';
     document.getElementById('paymentPage').style.display = 'block';
 
@@ -380,35 +341,53 @@ function buyNowFromCard(productId) {
     history.pushState({ page: 'payment' }, '', window.location.pathname);
 }
 
-// Mini toast notification when item added to cart
-function showCartToast(icon, name, weight, price) {
-    const existing = document.getElementById('cartToast');
-    if (existing) existing.remove();
+// ─── CART CHECKOUT (all items, grand total) ───────────────────────────────────
+function cartCheckout() {
+    if (cartItems.length === 0) return;
 
-    const toast = document.createElement('div');
-    toast.id = 'cartToast';
-    toast.innerHTML = `
-        <span class="toast-icon">${icon}</span>
-        <div class="toast-info">
-            <strong>${name}</strong>
-            <small>${weight} · ₹${price.toFixed(2)}</small>
-        </div>
-        <span class="toast-check"><i class="fas fa-check-circle"></i></span>`;
-    toast.className = 'cart-toast';
-    document.body.appendChild(toast);
+    const grandTotal = cartItems.reduce((sum, item) => sum + item.price, 0);
 
-    requestAnimationFrame(() => toast.classList.add('show'));
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 400);
-    }, 2500);
+    let summaryHTML = '';
+    cartItems.forEach(item => {
+        summaryHTML += `
+            <div class="checkout-item-row">
+                <span class="checkout-item-icon">${item.icon}</span>
+                <div class="checkout-item-detail">
+                    <strong>${item.productName}</strong>
+                    <small>${item.quantity} × ${item.weight} &nbsp;·&nbsp; ₹${item.pricePerKg}/kg</small>
+                </div>
+                <span class="checkout-item-price">₹${item.price.toFixed(2)}</span>
+            </div>`;
+    });
+
+    const firstItem    = cartItems[0];
+    const firstProduct = products.find(p => p.id === firstItem.productId) || products[0];
+    currentProduct     = firstProduct;
+    currentOrderDetails = {
+        isCartOrder: true,
+        weight:   firstItem.weightGrams || 500,
+        quantity: cartItems.reduce((s, i) => s + i.quantity, 0),
+        total:    grandTotal
+    };
+
+    closeCart();
+
+    document.getElementById('mainPage').style.display    = 'none';
+    document.getElementById('paymentPage').style.display = 'block';
+
+    document.getElementById('orderProductIcon').textContent = cartItems.length > 1 ? '🛒' : firstItem.icon;
+    document.getElementById('orderSummary').innerHTML       = summaryHTML;
+    document.getElementById('finalAmount').textContent      = '₹' + grandTotal.toFixed(2);
+    document.getElementById('payButtonAmount').textContent  = '₹' + grandTotal.toFixed(2);
+    document.getElementById('deliveryPin').value = currentUserPin;
+
+    window.scrollTo(0, 0);
 }
 
 // ─── CART DRAWER ──────────────────────────────────────────────────────────────
 function openCart() {
     renderCartDrawer();
     document.getElementById('cartDrawer').classList.add('open');
-    // No overlay, no body lock — user can still scroll and click products
 }
 function closeCart() {
     document.getElementById('cartDrawer').classList.remove('open');
@@ -421,8 +400,6 @@ function renderCartDrawer() {
     const badgeEl  = document.getElementById('cartCountBadge');
 
     if (badgeEl) badgeEl.textContent = cartItems.length;
-
-    // Always rebuild the list from scratch
     listEl.innerHTML = '';
 
     if (cartItems.length === 0) {
@@ -430,7 +407,6 @@ function renderCartDrawer() {
         footerEl.style.display = 'none';
         return;
     }
-
     emptyEl.style.display  = 'none';
     footerEl.style.display = 'block';
 
@@ -451,7 +427,6 @@ function renderCartDrawer() {
             </button>`;
         listEl.appendChild(div);
     });
-
     subEl.textContent = '₹' + subtotal.toFixed(2);
 }
 function removeCartItem(idx) {
@@ -468,120 +443,10 @@ function showMainPage() {
     document.getElementById('mainPage').style.display    = 'block';
     document.getElementById('paymentPage').style.display = 'none';
     loadProducts();
-    // Update browser history so back button works
-    if (history.state !== 'main') {
-        history.pushState('main', '', window.location.pathname);
-    }
+    if (history.state !== 'main') history.pushState('main', '', window.location.pathname);
 }
 
-function showDetail(productId) {
-    if (isOutOfStock(productId)) {
-        alert('Sorry! This product is out of stock for today. Please check back tomorrow.');
-        return;
-    }
-    currentProduct = products.find(p => p.id === productId);
-    if (!currentProduct) return;
-
-    document.getElementById('mainPage').style.display = 'none';
-    document.getElementById('detailPage').style.display = 'block';
-    document.getElementById('paymentPage').style.display = 'none';
-
-    document.getElementById('detailName').textContent            = currentProduct.name;
-    document.getElementById('detailDescription').textContent     = currentProduct.description;
-    document.getElementById('detailPrice').innerHTML             = `₹${currentProduct.price} <span>per kg</span>`;
-    document.getElementById('detailImage').innerHTML             = `<span style="font-size:8rem">${currentProduct.icon}</span>`;
-    document.getElementById('detailLongDescription').textContent = currentProduct.longDescription;
-    document.getElementById('detailOrigin').textContent         = currentProduct.origin;
-    document.getElementById('detailBestFor').textContent        = currentProduct.bestFor;
-    document.getElementById('detailCalories').textContent       = currentProduct.calories + ' kcal';
-    document.getElementById('detailProtein').textContent        = currentProduct.protein;
-    document.getElementById('detailFat').textContent            = currentProduct.fat;
-    document.getElementById('detailOmega3').textContent         = currentProduct.omega3;
-    document.getElementById('detailCalcium').textContent        = currentProduct.calcium;
-    document.getElementById('detailIron').textContent           = currentProduct.iron;
-
-    // Show stock info
-    const stockLeft = getStock(currentProduct.id);
-    const stockEl = document.getElementById('detailStockInfo');
-    if (stockLeft <= 5) {
-        stockEl.textContent = `Only ${stockLeft.toFixed(1)} kg left today!`;
-        stockEl.style.display = 'block';
-    } else {
-        stockEl.textContent = `${stockLeft.toFixed(0)} kg available today`;
-        stockEl.style.display = 'block';
-    }
-
-    document.getElementById('quantity').value = 1;
-    document.getElementById('weight500').checked = true;
-    calculateTotal();
-
-    // Push history state so browser back button & "Back to Products" both work
-    history.pushState({ page: 'detail', productId }, '', window.location.pathname + '?product=' + productId);
-    window.scrollTo(0, 0);
-}
-
-function increaseQuantity() {
-    const i = document.getElementById('quantity');
-    i.value = parseInt(i.value) + 1;
-    calculateTotal();
-}
-function decreaseQuantity() {
-    const i = document.getElementById('quantity');
-    if (parseInt(i.value) > 1) { i.value = parseInt(i.value) - 1; calculateTotal(); }
-}
-function calculateTotal() {
-    if (!currentProduct) return;
-    const wEl = document.querySelector('input[name="weight"]:checked');
-    const qEl = document.getElementById('quantity');
-    if (!wEl || !qEl) return;
-    const total = currentProduct.price * (parseInt(wEl.value) / 1000) * (parseInt(qEl.value) || 1);
-    document.getElementById('totalPrice').textContent = `₹${total.toFixed(2)}`;
-}
-
-// ─── PROCEED TO PAYMENT ───────────────────────────────────────────────────────
-function proceedToPayment() {
-    if (!currentProduct) return;
-    const weight   = parseInt(document.querySelector('input[name="weight"]:checked').value);
-    const quantity = parseInt(document.getElementById('quantity').value);
-    const soldKg   = (weight / 1000) * quantity;
-    const stockLeft = getStock(currentProduct.id);
-
-    if (stockLeft <= 0) { alert('Sorry! This product just went out of stock.'); showMainPage(); return; }
-    if (soldKg > stockLeft) { alert(`Only ${stockLeft.toFixed(1)} kg available today. Please reduce quantity.`); return; }
-
-    const total = currentProduct.price * (weight / 1000) * quantity;
-    currentOrderDetails = { product: currentProduct, weight, quantity, total };
-
-    const weightText = weight >= 1000 ? `${weight/1000}kg` : `${weight}g`;
-
-    // Add to cart list
-    cartItems.push({ productName: currentProduct.name, icon: currentProduct.icon, quantity, weight: weightText, price: total });
-    cartCount = cartItems.length;
-    document.getElementById('cartCount').textContent = cartCount;
-
-    document.getElementById('detailPage').style.display = 'none';
-    document.getElementById('paymentPage').style.display = 'block';
-
-    document.getElementById('orderProductIcon').textContent = currentProduct.icon;
-    document.getElementById('orderSummary').innerHTML = `
-        <strong>${currentProduct.name}</strong>
-        <div style="margin-top:4px;color:var(--text-muted);font-size:.85rem;">${quantity} × ${weightText} &nbsp;·&nbsp; ₹${currentProduct.price}/kg</div>`;
-    document.getElementById('finalAmount').textContent    = `₹${total.toFixed(2)}`;
-    document.getElementById('payButtonAmount').textContent = `₹${total.toFixed(2)}`;
-    document.getElementById('deliveryPin').value = currentUserPin;
-}
-
-function backToDetail() {
-    if (currentOrderDetails && currentProduct) {
-        document.getElementById('paymentPage').style.display = 'none';
-        document.getElementById('detailPage').style.display  = 'block';
-        document.getElementById(`weight${currentOrderDetails.weight}`).checked = true;
-        document.getElementById('quantity').value = currentOrderDetails.quantity;
-        calculateTotal();
-    } else { showMainPage(); }
-}
-
-// ─── PAYMENT ──────────────────────────────────────────────────────────────────
+// ─── PAYMENT FORM ─────────────────────────────────────────────────────────────
 function processPayment() {
     const nameInput     = document.getElementById('customerName');
     const phoneInput    = document.getElementById('customerPhone');
@@ -596,44 +461,71 @@ function processPayment() {
     if (phoneInput.value.length !== 10) { valid = false; phoneInput.classList.add('is-invalid'); }
     if (!valid) { alert('Please fill all required fields including Landmark'); return; }
 
-    const soldKg = (currentOrderDetails.weight / 1000) * currentOrderDetails.quantity;
-    if (soldKg > getStock(currentProduct.id)) {
-        alert('Stock reduced. Please go back and adjust quantity.'); return;
+    if (!currentOrderDetails.isCartOrder) {
+        const soldKg = (currentOrderDetails.weight / 1000) * currentOrderDetails.quantity;
+        if (soldKg > getStock(currentProduct.id)) {
+            alert('Stock reduced. Please go back and adjust quantity.'); return;
+        }
     }
 
     initiateRazorpayPayment({
-        name: nameInput.value, phone: phoneInput.value,
-        address: addressInput.value, landmark: landmarkInput.value || '',
-        pin: currentUserPin
+        name:     nameInput.value,
+        phone:    phoneInput.value,
+        address:  addressInput.value,
+        landmark: landmarkInput.value,
+        pin:      currentUserPin
     });
 }
 
+// ─── RAZORPAY — key fetched from Google Apps Script ───────────────────────────
 function initiateRazorpayPayment(customerDetails) {
+    const amount      = currentOrderDetails.total;
+    const description = currentOrderDetails.isCartOrder
+        ? `Cart Order (${cartItems.length} item${cartItems.length > 1 ? 's' : ''})`
+        : `Order for ${currentProduct.name}`;
+
+    document.getElementById('processingIndicator').style.display = 'block';
+
+    // Ask Google Apps Script to create a Razorpay order (key stays server-side)
+    fetch(CONFIG.webhookUrl, {
+        method:  'POST',
+        mode:    'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ type: 'create_order', amount })
+    })
+    .then(r => r.json())
+    .then(order => {
+        document.getElementById('processingIndicator').style.display = 'none';
+        if (order.status === 'ok') {
+            openRazorpay(order.keyId, order.orderId, order.amount, order.currency, description, customerDetails);
+        } else {
+            // Fallback — open directly with config key
+            openRazorpayFallback(description, customerDetails);
+        }
+    })
+    .catch(() => {
+        document.getElementById('processingIndicator').style.display = 'none';
+        openRazorpayFallback(description, customerDetails);
+    });
+}
+
+function openRazorpay(keyId, orderId, amount, currency, description, customerDetails) {
     const options = {
-        key: CONFIG.razorpayKey,
-        amount: Math.round(currentOrderDetails.total * 100),
-        currency: 'INR',
-        name: CONFIG.businessName,
-        description: currentOrderDetails.isCartOrder
-            ? `Cart Order (${cartItems.length} item${cartItems.length > 1 ? 's' : ''})`
-            : `Order for ${currentProduct.name}`,
-        handler: response => handlePaymentSuccess(response, customerDetails),
-        prefill: { name: customerDetails.name, contact: customerDetails.phone },
-        notes: {
-            product: currentProduct.name,
-            weight: currentOrderDetails.weight + 'g',
-            quantity: currentOrderDetails.quantity,
-            address: customerDetails.address,
-            landmark: customerDetails.landmark,
-            pin: customerDetails.pin
-        },
-        theme: { color: '#00b4d8' },
-        modal: { ondismiss: () => console.log('Payment cancelled') },
+        key:       keyId,
+        amount,
+        currency,
+        order_id:  orderId,
+        name:      CONFIG.businessName,
+        description,
+        handler:   response => handlePaymentSuccess(response, customerDetails),
+        prefill:   { name: customerDetails.name, contact: customerDetails.phone },
+        notes:     { address: customerDetails.address, landmark: customerDetails.landmark, pin: customerDetails.pin },
+        theme:     { color: '#00b4d8' },
+        modal:     { ondismiss: () => console.log('Payment cancelled') },
         config: {
             display: {
                 blocks: { banks: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] } },
-                sequence: ['block.banks'],
-                preferences: { show_default_blocks: true }
+                sequence: ['block.banks'], preferences: { show_default_blocks: true }
             }
         }
     };
@@ -641,9 +533,33 @@ function initiateRazorpayPayment(customerDetails) {
         const rzp = new Razorpay(options);
         rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); console.error(r.error); });
         rzp.open();
-    } else {
-        alert('Payment gateway not loaded. Please refresh.');
-    }
+    } else { alert('Payment gateway not loaded. Please refresh.'); }
+}
+
+function openRazorpayFallback(description, customerDetails) {
+    const options = {
+        key:         CONFIG.razorpayKey,
+        amount:      Math.round(currentOrderDetails.total * 100),
+        currency:    'INR',
+        name:        CONFIG.businessName,
+        description,
+        handler:     response => handlePaymentSuccess(response, customerDetails),
+        prefill:     { name: customerDetails.name, contact: customerDetails.phone },
+        notes:       { address: customerDetails.address, landmark: customerDetails.landmark, pin: customerDetails.pin },
+        theme:       { color: '#00b4d8' },
+        modal:       { ondismiss: () => console.log('Payment cancelled') },
+        config: {
+            display: {
+                blocks: { banks: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] } },
+                sequence: ['block.banks'], preferences: { show_default_blocks: true }
+            }
+        }
+    };
+    if (typeof Razorpay !== 'undefined') {
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); console.error(r.error); });
+        rzp.open();
+    } else { alert('Payment gateway not loaded. Please refresh.'); }
 }
 
 // ─── PAYMENT SUCCESS ──────────────────────────────────────────────────────────
@@ -654,10 +570,7 @@ function handlePaymentSuccess(response, customerDetails) {
     let productSummary, weightText, remaining;
 
     if (currentOrderDetails.isCartOrder) {
-        // Deduct stock for every cart item
-        cartItems.forEach(item => {
-            deductStock(item.productId, item.weightGrams || 500, item.quantity);
-        });
+        cartItems.forEach(item => deductStock(item.productId, item.weightGrams || 500, item.quantity));
         productSummary = cartItems.map(i => `${i.productName} (${i.quantity}×${i.weight})`).join(', ');
         weightText     = cartItems.map(i => i.weight).join(', ');
         remaining      = '';
@@ -689,7 +602,6 @@ function handlePaymentSuccess(response, customerDetails) {
     setTimeout(() => {
         document.getElementById('processingIndicator').style.display = 'none';
         showSuccessModal(orderId, customerDetails);
-        // Clear cart after successful payment
         cartItems = [];
         cartCount = 0;
         document.getElementById('cartCount').textContent = 0;
@@ -699,12 +611,9 @@ function handlePaymentSuccess(response, customerDetails) {
     }, 2000);
 }
 
-// ─── ⑤ WHATSAPP BILL TO CUSTOMER ─────────────────────────────────────────────
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
 function sendWhatsAppBill(orderData) {
     const d = orderData;
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbzkFxD11mVy2BK-jZ1hry0ZKy9we_pTTPcZqu8EQIN1KkK3Mz0ZbGVkRVxeeIoAAatz/exec';
-
-    // Build a bill message — Google Apps Script will forward this to WhatsApp via Twilio/Wati
     const billMessage =
 `🐟 *FRESH FISH MARKET*
 ━━━━━━━━━━━━━━━━━━
@@ -731,7 +640,7 @@ PIN: ${d.customerDetails.pin}
 ━━━━━━━━━━━━━━━━━━
 Thank you, ${d.customerDetails.name}! 🙏`;
 
-    fetch(webhookUrl, {
+    fetch(CONFIG.webhookUrl, {
         method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -750,134 +659,53 @@ Thank you, ${d.customerDetails.name}! 🙏`;
             pin:           d.customerDetails.pin,
             timestamp:     d.timestamp
         })
-    }).then(() => console.log('✅ WhatsApp bill triggered'))
-      .catch(e  => console.error('❌ WhatsApp error:', e));
+    }).catch(e => console.error('❌ WhatsApp error:', e));
 }
 
-// ─── ⑤ ADMIN EMAIL ────────────────────────────────────────────────────────────
 function sendAdminEmail(orderData) {
     const d = orderData;
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbzkFxD11mVy2BK-jZ1hry0ZKy9we_pTTPcZqu8EQIN1KkK3Mz0ZbGVkRVxeeIoAAatz/exec';
-
-    fetch(webhookUrl, {
+    fetch(CONFIG.webhookUrl, {
         method: 'POST', mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            type:          'admin_email',
-            adminEmail:    CONFIG.adminEmail,
-            orderId:       d.orderId,
-            paymentId:     d.paymentId,
-            customerName:  d.customerDetails.name,
-            customerPhone: d.customerDetails.phone,
-            product:       d.product,
-            quantity:      d.quantity,
-            weight:        d.weight,
-            pricePerKg:    d.pricePerKg,
-            amount:        d.amount.toFixed(2),
-            address:       d.customerDetails.address,
-            landmark:      d.customerDetails.landmark || 'N/A',
-            pin:           d.customerDetails.pin,
+            type:           'admin_email',
+            adminEmail:     CONFIG.adminEmail,
+            orderId:        d.orderId,
+            paymentId:      d.paymentId,
+            customerName:   d.customerDetails.name,
+            customerPhone:  d.customerDetails.phone,
+            product:        d.product,
+            quantity:       d.quantity,
+            weight:         d.weight,
+            pricePerKg:     d.pricePerKg,
+            amount:         d.amount.toFixed(2),
+            address:        d.customerDetails.address,
+            landmark:       d.customerDetails.landmark || 'N/A',
+            pin:            d.customerDetails.pin,
             stockRemaining: d.stockRemaining,
-            timestamp:     d.timestamp
+            timestamp:      d.timestamp
         })
-    }).then(() => console.log('✅ Admin email triggered → ' + CONFIG.adminEmail))
-      .catch(e  => console.error('❌ Admin email error:', e));
+    }).catch(e => console.error('❌ Admin email error:', e));
 }
 
 // ─── MODALS ───────────────────────────────────────────────────────────────────
 function showSuccessModal(orderId, customerDetails) {
-    document.getElementById('orderId').textContent       = orderId;
+    document.getElementById('orderId').textContent        = orderId;
     document.getElementById('confirmedPhone').textContent = '+91 ' + customerDetails.phone;
-    document.getElementById('overlay').style.display      = 'block';
-    document.getElementById('successModal').style.display = 'block';
+    document.getElementById('overlay').style.display       = 'block';
+    document.getElementById('successModal').style.display  = 'block';
 }
 function closeModal() {
     document.getElementById('overlay').style.display      = 'none';
     document.getElementById('successModal').style.display = 'none';
-    cartItems = [];
-    cartCount = 0;
+    cartItems = []; cartCount = 0;
     document.getElementById('cartCount').textContent = 0;
     showMainPage();
     document.getElementById('paymentForm').reset();
     document.getElementById('deliveryPin').value = currentUserPin;
 }
 
-// ─── BOOT ─────────────────────────────────────────────────────────────────────
-// ─── CART CHECKOUT ────────────────────────────────────────
-// Shows ALL cart items, charges grand total
-function cartCheckout() {
-    if (cartItems.length === 0) return;
-
-    // Grand total of all items
-    const grandTotal = cartItems.reduce((sum, item) => sum + item.price, 0);
-
-    // Build summary rows for every cart item
-    let summaryHTML = '';
-    cartItems.forEach(item => {
-        summaryHTML += `
-            <div class="checkout-item-row">
-                <span class="checkout-item-icon">${item.icon}</span>
-                <div class="checkout-item-detail">
-                    <strong>${item.productName}</strong>
-                    <small>${item.quantity} × ${item.weight} &nbsp;·&nbsp; ₹${item.pricePerKg}/kg</small>
-                </div>
-                <span class="checkout-item-price">₹${item.price.toFixed(2)}</span>
-            </div>`;
-    });
-
-    // For Razorpay — use first item as primary product, total = grandTotal
-    const firstItem    = cartItems[0];
-    const firstProduct = products.find(p => p.id === firstItem.productId) || products[0];
-    currentProduct     = firstProduct;
-    currentOrderDetails = {
-        isCartOrder: true,
-        weight:      firstItem.weightGrams || 500,
-        quantity:    cartItems.reduce((s, i) => s + i.quantity, 0),
-        total:       grandTotal
-    };
-
-    closeCart();
-
-    document.getElementById('mainPage').style.display    = 'none';
-    document.getElementById('paymentPage').style.display = 'block';
-
-    // Show cart icon when multiple items
-    document.getElementById('orderProductIcon').textContent = cartItems.length > 1 ? '🛒' : firstItem.icon;
-    document.getElementById('orderSummary').innerHTML       = summaryHTML;
-    document.getElementById('finalAmount').textContent      = '₹' + grandTotal.toFixed(2);
-    document.getElementById('payButtonAmount').textContent  = '₹' + grandTotal.toFixed(2);
-    document.getElementById('deliveryPin').value = currentUserPin;
-
-    window.scrollTo(0, 0);
-}
-
-// ─── BACK FROM DETAIL ─────────────────────────────────────
-// Called by the "Back to Products" button on detail page
-function goBackFromDetail() {
-    history.back(); // triggers popstate which shows main page
-}
-
-// ─── QUICK ADD TO CART (from product card without going to detail) ─────
-function quickAddToCart(productId) {
-    const product = products.find(p => p.id === productId);
-    if (!product || isOutOfStock(productId)) return;
-
-    // Default: 500g x 1
-    const weight   = 500;
-    const quantity  = 1;
-    const total    = product.price * (weight / 1000) * quantity;
-    const weightText = '500g';
-
-    cartItems.push({ productName: product.name, icon: product.icon, quantity, weight: weightText, price: total });
-    cartCount = cartItems.length;
-    document.getElementById('cartCount').textContent = cartCount;
-    document.getElementById('cartCountBadge').textContent = cartCount;
-
-    // Open cart drawer immediately so user sees their item
-    openCart();
-}
-
-// ─── BROWSER BACK / FORWARD ──────────────────────────────
+// ─── POPSTATE (browser back button) ──────────────────────────────────────────
 window.addEventListener('popstate', function(e) {
     const state = e.state;
     if (!state || state === 'main') {
@@ -887,27 +715,20 @@ window.addEventListener('popstate', function(e) {
     }
 });
 
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', init);
 
-window.verifyPinCode    = verifyPinCode;
-window.retryPinCode     = retryPinCode;
-window.changePinCode    = changePinCode;
-window.showMainPage     = showMainPage;
-window.showDetail       = showDetail;
-window.increaseQuantity = increaseQuantity;
-window.decreaseQuantity = decreaseQuantity;
-window.proceedToPayment = proceedToPayment;
-window.processPayment   = processPayment;
-window.closeModal       = closeModal;
-window.backToDetail     = backToDetail;
-window.openCart         = openCart;
-window.closeCart        = closeCart;
-window.removeCartItem   = removeCartItem;
-window.goBackFromDetail = goBackFromDetail;
-window.quickAddToCart   = quickAddToCart;
-window.cartCheckout     = cartCheckout;
-window.buyNowFromCard   = buyNowFromCard;
-window.updateCardPrice  = updateCardPrice;
+window.verifyPinCode     = verifyPinCode;
+window.retryPinCode      = retryPinCode;
+window.changePinCode     = changePinCode;
+window.showMainPage      = showMainPage;
+window.processPayment    = processPayment;
+window.closeModal        = closeModal;
+window.openCart          = openCart;
+window.closeCart         = closeCart;
+window.removeCartItem    = removeCartItem;
+window.cartCheckout      = cartCheckout;
+window.buyNowFromCard    = buyNowFromCard;
+window.updateCardPrice   = updateCardPrice;
 window.addToCartFromCard = addToCartFromCard;
-window.showCartToast    = showCartToast;
-window.changeCardQty    = changeCardQty;
+window.changeCardQty     = changeCardQty;
