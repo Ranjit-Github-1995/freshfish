@@ -5,12 +5,12 @@ const CONFIG = {
     validPinCodes: ['712503', '712502', '712148'],
     bannerStartHour: 14,
     sessionStorageKey: 'userPinCode',
-    razorpayKey: 'rzp_live_T8a5xzy3zVLPLR', // fallback only — primary key stored in Google Apps Script
+    razorpayKey: 'rzp_live_RRtsemTmyPcpeX', // fallback only — primary key stored in Google Apps Script
     businessName: 'Fresh Fish Market',
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
     adminEmail: 'fresheverydayfish@gmail.com',
-    webhookUrl: 'https://script.google.com/macros/s/AKfycbzBkn-8Y8-4Esjwlb1-sPfRWeMUutJ5LFFAl-ruUgggHZJWkYboJdNpN4Vo5_393ow4/exec',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycbym53csniAiD-4UVniuNtw3xDXJ9jukJRaxqzpGnfqZwLNoTLrNxyGBgM4viaisf2M2/exec',
     whatsapp: { adminPhone: '7890152617', enableNotifications: true }
 };
 
@@ -477,89 +477,55 @@ function processPayment() {
     });
 }
 
-// ─── RAZORPAY — key fetched from Google Apps Script ───────────────────────────
+// ─── RAZORPAY — direct integration (proven working) ──────────────────────────
 function initiateRazorpayPayment(customerDetails) {
-    const amount      = currentOrderDetails.total;
     const description = currentOrderDetails.isCartOrder
         ? `Cart Order (${cartItems.length} item${cartItems.length > 1 ? 's' : ''})`
         : `Order for ${currentProduct.name}`;
 
-    document.getElementById('processingIndicator').style.display = 'block';
-
-    // Ask Google Apps Script to create a Razorpay order (key stays server-side)
-    fetch(CONFIG.webhookUrl, {
-        method:  'POST',
-        mode:    'cors',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ type: 'create_order', amount })
-    })
-    .then(r => r.json())
-    .then(order => {
-        document.getElementById('processingIndicator').style.display = 'none';
-        if (order.status === 'ok') {
-            openRazorpay(order.keyId, order.orderId, order.amount, order.currency, description, customerDetails);
-        } else {
-            // Fallback — open directly with config key
-            openRazorpayFallback(description, customerDetails);
-        }
-    })
-    .catch(() => {
-        document.getElementById('processingIndicator').style.display = 'none';
-        openRazorpayFallback(description, customerDetails);
-    });
-}
-
-function openRazorpay(keyId, orderId, amount, currency, description, customerDetails) {
     const options = {
-        key:       keyId,
-        amount,
-        currency,
-        order_id:  orderId,
-        name:      CONFIG.businessName,
+        key:      CONFIG.razorpayKey,
+        amount:   Math.round(currentOrderDetails.total * 100), // paise
+        currency: 'INR',
+        name:     CONFIG.businessName,
         description,
-        handler:   response => handlePaymentSuccess(response, customerDetails),
-        prefill:   { name: customerDetails.name, contact: customerDetails.phone },
-        notes:     { address: customerDetails.address, landmark: customerDetails.landmark, pin: customerDetails.pin },
-        theme:     { color: '#00b4d8' },
-        modal:     { ondismiss: () => console.log('Payment cancelled') },
+        image:    CONFIG.businessLogo,
+        handler:  response => handlePaymentSuccess(response, customerDetails),
+        prefill: {
+            name:    customerDetails.name,
+            contact: customerDetails.phone
+        },
+        notes: {
+            address:  customerDetails.address,
+            landmark: customerDetails.landmark,
+            pin:      customerDetails.pin,
+            product:  currentOrderDetails.isCartOrder
+                ? cartItems.map(i => i.productName).join(', ')
+                : currentProduct.name
+        },
+        theme: { color: '#00b4d8' },
+        modal: { ondismiss: () => console.log('Payment cancelled by user') },
         config: {
             display: {
-                blocks: { banks: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] } },
-                sequence: ['block.banks'], preferences: { show_default_blocks: true }
+                blocks: {
+                    banks: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] }
+                },
+                sequence: ['block.banks'],
+                preferences: { show_default_blocks: true }
             }
         }
     };
-    if (typeof Razorpay !== 'undefined') {
-        const rzp = new Razorpay(options);
-        rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); console.error(r.error); });
-        rzp.open();
-    } else { alert('Payment gateway not loaded. Please refresh.'); }
-}
 
-function openRazorpayFallback(description, customerDetails) {
-    const options = {
-        key:         CONFIG.razorpayKey,
-        amount:      Math.round(currentOrderDetails.total * 100),
-        currency:    'INR',
-        name:        CONFIG.businessName,
-        description,
-        handler:     response => handlePaymentSuccess(response, customerDetails),
-        prefill:     { name: customerDetails.name, contact: customerDetails.phone },
-        notes:       { address: customerDetails.address, landmark: customerDetails.landmark, pin: customerDetails.pin },
-        theme:       { color: '#00b4d8' },
-        modal:       { ondismiss: () => console.log('Payment cancelled') },
-        config: {
-            display: {
-                blocks: { banks: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] } },
-                sequence: ['block.banks'], preferences: { show_default_blocks: true }
-            }
-        }
-    };
     if (typeof Razorpay !== 'undefined') {
         const rzp = new Razorpay(options);
-        rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); console.error(r.error); });
+        rzp.on('payment.failed', function(response) {
+            alert('Payment failed. Please try again.');
+            console.error('Payment failed:', response.error);
+        });
         rzp.open();
-    } else { alert('Payment gateway not loaded. Please refresh.'); }
+    } else {
+        alert('Payment gateway not loaded. Please refresh the page and try again.');
+    }
 }
 
 // ─── PAYMENT SUCCESS ──────────────────────────────────────────────────────────
