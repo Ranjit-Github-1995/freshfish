@@ -10,7 +10,7 @@ const CONFIG = {
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
     adminEmail: 'fresheverydayfish@gmail.com',
-    webhookUrl: 'https://script.google.com/macros/s/AKfycbym53csniAiD-4UVniuNtw3xDXJ9jukJRaxqzpGnfqZwLNoTLrNxyGBgM4viaisf2M2/exec',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycbys3DUAa3XR4_7BPf1qJk20krQikK_y37DVbBh1C9e3j-vFfYENvHI1JRm2alnVViBr/exec',
     whatsapp: { adminPhone: '7890152617', enableNotifications: true }
 };
 
@@ -49,7 +49,7 @@ function isOutOfStock(id) { return getStock(id) <= 0; }
 
 // ─── PRODUCTS ─────────────────────────────────────────────────────────────────
 const products = [
-    { id:1,  name:'Rohu Fishh',   price:5,    description:'Fresh water fish, rich in omega-3',       icon:'🐟', longDescription:'Rohu is one of the most popular freshwater fish in Bengali cuisine. Known for its tender meat and mild flavor.', origin:'Freshwater ponds and rivers of West Bengal', bestFor:'Bengali curry, Rohu Kalia, Fish fry', calories:'97',  protein:'16.4g', fat:'1.4g',  omega3:'0.6g', calcium:'45mg',  iron:'1.2mg' },
+    { id:1,  name:'Rohu Fish',   price:1,    description:'Fresh water fish, rich in omega-3',       icon:'🐟', longDescription:'Rohu is one of the most popular freshwater fish in Bengali cuisine. Known for its tender meat and mild flavor.', origin:'Freshwater ponds and rivers of West Bengal', bestFor:'Bengali curry, Rohu Kalia, Fish fry', calories:'97',  protein:'16.4g', fat:'1.4g',  omega3:'0.6g', calcium:'45mg',  iron:'1.2mg' },
     { id:2,  name:'Katla Fish',  price:320,  description:'Large freshwater fish, perfect for curry', icon:'🐠', longDescription:'Katla is a prized freshwater fish known for its large size and rich taste.', origin:'Local fish farms and rivers', bestFor:'Katla Kalia, Macher Jhol, Steam preparations', calories:'111', protein:'17.8g', fat:'2.3g',  omega3:'0.8g', calcium:'60mg',  iron:'1.5mg' },
     { id:3,  name:'Hilsa Fish',  price:1140, description:'Premium Bengali delicacy',                 icon:'🐟', longDescription:'Hilsa (Ilish) is the queen of fish in Bengali cuisine.', origin:'Bay of Bengal and Padma River', bestFor:'Bhapa Ilish, Ilish Paturi, Sorshe Ilish', calories:'273', protein:'21.8g', fat:'19.5g', omega3:'2.8g', calcium:'180mg', iron:'2.1mg' },
     { id:4,  name:'Pomfret',     price:850,  description:'Sea fish with delicate flavor',            icon:'🐠', longDescription:'Pomfret is a premium sea fish with soft, white flesh and minimal bones.', origin:'Arabian Sea and Bay of Bengal', bestFor:'Tandoori, Pan fry, Butter garlic preparations', calories:'96',  protein:'19g',   fat:'1.7g',  omega3:'1.1g', calcium:'80mg',  iron:'0.9mg' },
@@ -477,24 +477,55 @@ function processPayment() {
     });
 }
 
-// ─── RAZORPAY — direct integration (proven working) ──────────────────────────
+// ─── RAZORPAY — via Orders API (tracked in dashboard) ────────────────────────
 function initiateRazorpayPayment(customerDetails) {
     const description = currentOrderDetails.isCartOrder
         ? `Cart Order (${cartItems.length} item${cartItems.length > 1 ? 's' : ''})`
         : `Order for ${currentProduct.name}`;
 
+    const amount = currentOrderDetails.total;
+
+    // Show loading spinner
+    document.getElementById('processingIndicator').style.display = 'block';
+
+    // Step 1: Create order via Google Apps Script (uses Razorpay Orders API)
+    fetch(CONFIG.webhookUrl, {
+        method:  'POST',
+        mode:    'no-cors', // use no-cors to avoid CORS errors
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ type: 'create_order', amount })
+    })
+    .then(() => {
+        // no-cors returns opaque response — call GAS via GET with params instead
+        return fetch(CONFIG.webhookUrl + '?type=create_order&amount=' + amount);
+    })
+    .then(r => r.json())
+    .then(order => {
+        document.getElementById('processingIndicator').style.display = 'none';
+        if (order.status === 'ok' && order.orderId) {
+            openRazorpayWithOrder(order, description, customerDetails);
+        } else {
+            // Fallback to direct if order creation fails
+            openRazorpayDirect(description, customerDetails);
+        }
+    })
+    .catch(() => {
+        document.getElementById('processingIndicator').style.display = 'none';
+        openRazorpayDirect(description, customerDetails);
+    });
+}
+
+// Open Razorpay WITH order_id (appears in dashboard Orders tab)
+function openRazorpayWithOrder(order, description, customerDetails) {
     const options = {
-        key:      CONFIG.razorpayKey,
-        amount:   Math.round(currentOrderDetails.total * 100), // paise
-        currency: 'INR',
+        key:      order.keyId || CONFIG.razorpayKey,
+        amount:   order.amount,
+        currency: order.currency || 'INR',
+        order_id: order.orderId,  // ← this is what makes it appear in dashboard
         name:     CONFIG.businessName,
         description,
-        image:    CONFIG.businessLogo,
         handler:  response => handlePaymentSuccess(response, customerDetails),
-        prefill: {
-            name:    customerDetails.name,
-            contact: customerDetails.phone
-        },
+        prefill:  { name: customerDetails.name, contact: customerDetails.phone },
         notes: {
             address:  customerDetails.address,
             landmark: customerDetails.landmark,
@@ -504,28 +535,48 @@ function initiateRazorpayPayment(customerDetails) {
                 : currentProduct.name
         },
         theme: { color: '#00b4d8' },
-        modal: { ondismiss: () => console.log('Payment cancelled by user') },
+        modal: { ondismiss: () => console.log('Payment cancelled') },
         config: {
             display: {
-                blocks: {
-                    banks: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] }
-                },
+                blocks: { banks: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] } },
                 sequence: ['block.banks'],
                 preferences: { show_default_blocks: true }
             }
         }
     };
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); });
+    rzp.open();
+}
 
-    if (typeof Razorpay !== 'undefined') {
-        const rzp = new Razorpay(options);
-        rzp.on('payment.failed', function(response) {
-            alert('Payment failed. Please try again.');
-            console.error('Payment failed:', response.error);
-        });
-        rzp.open();
-    } else {
-        alert('Payment gateway not loaded. Please refresh the page and try again.');
-    }
+// Fallback — direct Razorpay (still works, proven)
+function openRazorpayDirect(description, customerDetails) {
+    const options = {
+        key:      CONFIG.razorpayKey,
+        amount:   Math.round(currentOrderDetails.total * 100),
+        currency: 'INR',
+        name:     CONFIG.businessName,
+        description,
+        handler:  response => handlePaymentSuccess(response, customerDetails),
+        prefill:  { name: customerDetails.name, contact: customerDetails.phone },
+        notes: {
+            address:  customerDetails.address,
+            landmark: customerDetails.landmark,
+            pin:      customerDetails.pin
+        },
+        theme: { color: '#00b4d8' },
+        modal: { ondismiss: () => console.log('Payment cancelled') },
+        config: {
+            display: {
+                blocks: { banks: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] } },
+                sequence: ['block.banks'],
+                preferences: { show_default_blocks: true }
+            }
+        }
+    };
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); });
+    rzp.open();
 }
 
 // ─── PAYMENT SUCCESS ──────────────────────────────────────────────────────────
