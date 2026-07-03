@@ -10,7 +10,7 @@ const CONFIG = {
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
     adminEmail: 'fresheverydayfish@gmail.com',
-    webhookUrl: 'https://script.google.com/macros/s/AKfycbyIkQ3Narv5AZ-_z_CuDjfJBYCmDjUaPtcvfe-2qdK88yz4kqJ2Y1dRSAqCz-lO4_PD/exec',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycbyz-ddrc_J6hJLVs6JJOP0ioEzI8-xUKGUQAGhUsumh2msKfCaeLA-K9Xu19bi0trn6/exec',
     whatsapp: { adminPhone: '7890152617', enableNotifications: true }
 };
 
@@ -49,7 +49,7 @@ function isOutOfStock(id) { return getStock(id) <= 0; }
 
 // ─── PRODUCTS ─────────────────────────────────────────────────────────────────
 const products = [
-    { id:1,  name:'Rohu Fish',   price:5,    description:'Fresh water fish, rich in omega-3',       icon:'🐟', longDescription:'Rohu is one of the most popular freshwater fish in Bengali cuisine.', origin:'Freshwater ponds and rivers of West Bengal', bestFor:'Bengali curry, Rohu Kalia, Fish fry', calories:'97',  protein:'16.4g', fat:'1.4g',  omega3:'0.6g', calcium:'45mg',  iron:'1.2mg' },
+    { id:1,  name:'Rohu Fish',   price:1,    description:'Fresh water fish, rich in omega-3',       icon:'🐟', longDescription:'Rohu is one of the most popular freshwater fish in Bengali cuisine.', origin:'Freshwater ponds and rivers of West Bengal', bestFor:'Bengali curry, Rohu Kalia, Fish fry', calories:'97',  protein:'16.4g', fat:'1.4g',  omega3:'0.6g', calcium:'45mg',  iron:'1.2mg' },
     { id:2,  name:'Katla Fish',  price:320,  description:'Large freshwater fish, perfect for curry', icon:'🐠', longDescription:'Katla is a prized freshwater fish known for its large size and rich taste.', origin:'Local fish farms and rivers', bestFor:'Katla Kalia, Macher Jhol, Steam preparations', calories:'111', protein:'17.8g', fat:'2.3g',  omega3:'0.8g', calcium:'60mg',  iron:'1.5mg' },
     { id:3,  name:'Hilsa Fish',  price:1140, description:'Premium Bengali delicacy',                 icon:'🐟', longDescription:'Hilsa (Ilish) is the queen of fish in Bengali cuisine.', origin:'Bay of Bengal and Padma River', bestFor:'Bhapa Ilish, Ilish Paturi, Sorshe Ilish', calories:'273', protein:'21.8g', fat:'19.5g', omega3:'2.8g', calcium:'180mg', iron:'2.1mg' },
     { id:4,  name:'Pomfret',     price:850,  description:'Sea fish with delicate flavor',            icon:'🐠', longDescription:'Pomfret is a premium sea fish with soft, white flesh and minimal bones.', origin:'Arabian Sea and Bay of Bengal', bestFor:'Tandoori, Pan fry, Butter garlic preparations', calories:'96',  protein:'19g',   fat:'1.7g',  omega3:'1.1g', calcium:'80mg',  iron:'0.9mg' },
@@ -507,7 +507,7 @@ function initiateRazorpayPayment(customerDetails) {
     if (typeof Razorpay !== 'undefined') {
         const rzp = new Razorpay(options);
         rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); console.error(r.error); });
-        setTimeout(() => rzp.open(), 300);
+        setTimeout(() => rzp.open(), 800);
     } else {
         alert('Payment gateway not loaded. Please refresh.');
     }
@@ -566,52 +566,48 @@ function handlePaymentSuccess(response, customerDetails) {
     }, 2000);
 }
 
-// ─── SEND VIA FORM (bypasses CORS completely) ─────────────────────────────────
+// ─── SEND ORDER DATA TO GAS (multiple methods for reliability) ────────────────
 function sendViaForm(payload) {
+    // Method 1: XMLHttpRequest (most reliable for GAS)
     try {
-        // Create hidden form and submit to GAS
-        const form   = document.createElement('form');
-        form.method  = 'POST';
-        form.action  = CONFIG.webhookUrl;
-        form.target  = 'hidden_iframe'; // submit to hidden iframe — no page redirect
-        form.style.display = 'none';
-
-        // Add hidden iframe if not exists
-        if (!document.getElementById('hidden_iframe')) {
-            const iframe = document.createElement('iframe');
-            iframe.name  = 'hidden_iframe';
-            iframe.id    = 'hidden_iframe';
-            iframe.style.display = 'none';
-            document.body.appendChild(iframe);
-        }
-
-        // Add all payload fields as hidden inputs
-        Object.keys(payload).forEach(key => {
-            const input   = document.createElement('input');
-            input.type    = 'hidden';
-            input.name    = key;
-            input.value   = payload[key];
-            form.appendChild(input);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-
-        // Clean up after submit
-        setTimeout(() => {
-            document.body.removeChild(form);
-        }, 3000);
-
-        console.log('✅ Order submitted via form');
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', CONFIG.webhookUrl, true);
+        xhr.setRequestHeader('Content-Type', 'text/plain'); // GAS accepts text/plain without CORS preflight
+        xhr.onload = function() {
+            console.log('✅ XHR response:', xhr.responseText);
+        };
+        xhr.onerror = function() {
+            console.log('XHR failed, trying method 2...');
+            sendViaGETRequest(payload);
+        };
+        xhr.send(JSON.stringify(payload));
+        console.log('✅ Order sent via XHR');
     } catch(err) {
-        console.error('Form submit failed:', err);
-        // Last resort fallback
+        console.error('XHR error:', err);
+        sendViaGETRequest(payload);
+    }
+}
+
+// Method 2: GET request with encoded payload
+function sendViaGETRequest(payload) {
+    try {
+        const encoded = encodeURIComponent(JSON.stringify(payload));
+        const url     = CONFIG.webhookUrl + '?data=' + encoded;
+        const img     = new Image();
+        img.src       = url;
+        console.log('✅ Order sent via GET');
+
+        // Also try fetch no-cors as backup
         fetch(CONFIG.webhookUrl, {
-            method: 'POST',
-            mode:   'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body:   JSON.stringify(payload)
-        });
+            method:  'POST',
+            mode:    'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
+            body:    JSON.stringify(payload)
+        }).then(() => console.log('✅ Backup fetch sent'))
+          .catch(e  => console.error('Backup fetch failed:', e));
+
+    } catch(err) {
+        console.error('GET method failed:', err);
     }
 }
 
