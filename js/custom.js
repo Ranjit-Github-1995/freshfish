@@ -5,12 +5,12 @@ const CONFIG = {
     validPinCodes: ['712503', '712502', '712148'],
     bannerStartHour: 14,
     sessionStorageKey: 'userPinCode',
-    razorpayKey: 'rzp_live_T8a5xzy3zVLPLR', // fallback only — primary key stored in Google Apps Script
+    razorpayKey: 'rzp_live_T8a5xzy3zVLPLR',
     businessName: 'Fresh Fish Market',
     businessDescription: 'Premium Quality Fish Delivery',
     businessLogo: '',
     adminEmail: 'fresheverydayfish@gmail.com',
-    webhookUrl: 'https://script.google.com/macros/s/AKfycbyKmcr_72OksKxFbSFI26Rd5RMjAHXWndySkN13TPayjy5I739hQVJ6NIDqBragkoip/exec',
+    webhookUrl: 'https://script.google.com/macros/s/AKfycbyIkQ3Narv5AZ-_z_CuDjfJBYCmDjUaPtcvfe-2qdK88yz4kqJ2Y1dRSAqCz-lO4_PD/exec',
     whatsapp: { adminPhone: '7890152617', enableNotifications: true }
 };
 
@@ -49,7 +49,7 @@ function isOutOfStock(id) { return getStock(id) <= 0; }
 
 // ─── PRODUCTS ─────────────────────────────────────────────────────────────────
 const products = [
-    { id:1,  name:'Rohu Fish',   price:4,    description:'Fresh water fish, rich in omega-3',       icon:'🐟', longDescription:'Rohu is one of the most popular freshwater fish in Bengali cuisine. Known for its tender meat and mild flavor.', origin:'Freshwater ponds and rivers of West Bengal', bestFor:'Bengali curry, Rohu Kalia, Fish fry', calories:'97',  protein:'16.4g', fat:'1.4g',  omega3:'0.6g', calcium:'45mg',  iron:'1.2mg' },
+    { id:1,  name:'Rohu Fish',   price:1,    description:'Fresh water fish, rich in omega-3',       icon:'🐟', longDescription:'Rohu is one of the most popular freshwater fish in Bengali cuisine.', origin:'Freshwater ponds and rivers of West Bengal', bestFor:'Bengali curry, Rohu Kalia, Fish fry', calories:'97',  protein:'16.4g', fat:'1.4g',  omega3:'0.6g', calcium:'45mg',  iron:'1.2mg' },
     { id:2,  name:'Katla Fish',  price:320,  description:'Large freshwater fish, perfect for curry', icon:'🐠', longDescription:'Katla is a prized freshwater fish known for its large size and rich taste.', origin:'Local fish farms and rivers', bestFor:'Katla Kalia, Macher Jhol, Steam preparations', calories:'111', protein:'17.8g', fat:'2.3g',  omega3:'0.8g', calcium:'60mg',  iron:'1.5mg' },
     { id:3,  name:'Hilsa Fish',  price:1140, description:'Premium Bengali delicacy',                 icon:'🐟', longDescription:'Hilsa (Ilish) is the queen of fish in Bengali cuisine.', origin:'Bay of Bengal and Padma River', bestFor:'Bhapa Ilish, Ilish Paturi, Sorshe Ilish', calories:'273', protein:'21.8g', fat:'19.5g', omega3:'2.8g', calcium:'180mg', iron:'2.1mg' },
     { id:4,  name:'Pomfret',     price:850,  description:'Sea fish with delicate flavor',            icon:'🐠', longDescription:'Pomfret is a premium sea fish with soft, white flesh and minimal bones.', origin:'Arabian Sea and Bay of Bengal', bestFor:'Tandoori, Pan fry, Butter garlic preparations', calories:'96',  protein:'19g',   fat:'1.7g',  omega3:'1.1g', calcium:'80mg',  iron:'0.9mg' },
@@ -298,7 +298,6 @@ function addToCartFromCard(productId) {
     document.getElementById('cartCount').textContent = cartCount;
     const badge = document.getElementById('cartCountBadge');
     if (badge) badge.textContent = cartCount;
-
     renderCartDrawer();
     openCart();
 }
@@ -336,18 +335,16 @@ function buyNowFromCard(productId) {
     document.getElementById('finalAmount').textContent     = '₹' + total.toFixed(2);
     document.getElementById('payButtonAmount').textContent = '₹' + total.toFixed(2);
     document.getElementById('deliveryPin').value = currentUserPin;
-
     window.scrollTo(0, 0);
     history.pushState({ page: 'payment' }, '', window.location.pathname);
 }
 
-// ─── CART CHECKOUT (all items, grand total) ───────────────────────────────────
+// ─── CART CHECKOUT ────────────────────────────────────────────────────────────
 function cartCheckout() {
     if (cartItems.length === 0) return;
 
     const grandTotal = cartItems.reduce((sum, item) => sum + item.price, 0);
-
-    let summaryHTML = '';
+    let summaryHTML  = '';
     cartItems.forEach(item => {
         summaryHTML += `
             <div class="checkout-item-row">
@@ -371,16 +368,13 @@ function cartCheckout() {
     };
 
     closeCart();
-
     document.getElementById('mainPage').style.display    = 'none';
     document.getElementById('paymentPage').style.display = 'block';
-
     document.getElementById('orderProductIcon').textContent = cartItems.length > 1 ? '🛒' : firstItem.icon;
     document.getElementById('orderSummary').innerHTML       = summaryHTML;
     document.getElementById('finalAmount').textContent      = '₹' + grandTotal.toFixed(2);
     document.getElementById('payButtonAmount').textContent  = '₹' + grandTotal.toFixed(2);
     document.getElementById('deliveryPin').value = currentUserPin;
-
     window.scrollTo(0, 0);
 }
 
@@ -477,51 +471,16 @@ function processPayment() {
     });
 }
 
-// ─── RAZORPAY — via Orders API (tracked in dashboard) ────────────────────────
+// ─── RAZORPAY ─────────────────────────────────────────────────────────────────
 function initiateRazorpayPayment(customerDetails) {
     const description = currentOrderDetails.isCartOrder
         ? `Cart Order (${cartItems.length} item${cartItems.length > 1 ? 's' : ''})`
         : `Order for ${currentProduct.name}`;
 
-    const amount = currentOrderDetails.total;
-
-    // Show loading spinner
-    document.getElementById('processingIndicator').style.display = 'block';
-
-    // Step 1: Create order via Google Apps Script (uses Razorpay Orders API)
-    fetch(CONFIG.webhookUrl, {
-        method:  'POST',
-        mode:    'no-cors', // use no-cors to avoid CORS errors
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ type: 'create_order', amount })
-    })
-    .then(() => {
-        // no-cors returns opaque response — call GAS via GET with params instead
-        return fetch(CONFIG.webhookUrl + '?type=create_order&amount=' + amount);
-    })
-    .then(r => r.json())
-    .then(order => {
-        document.getElementById('processingIndicator').style.display = 'none';
-        if (order.status === 'ok' && order.orderId) {
-            openRazorpayWithOrder(order, description, customerDetails);
-        } else {
-            // Fallback to direct if order creation fails
-            openRazorpayDirect(description, customerDetails);
-        }
-    })
-    .catch(() => {
-        document.getElementById('processingIndicator').style.display = 'none';
-        openRazorpayDirect(description, customerDetails);
-    });
-}
-
-// Open Razorpay WITH order_id (appears in dashboard Orders tab)
-function openRazorpayWithOrder(order, description, customerDetails) {
     const options = {
-        key:      order.keyId || CONFIG.razorpayKey,
-        amount:   order.amount,
-        currency: order.currency || 'INR',
-        order_id: order.orderId,  // ← this is what makes it appear in dashboard
+        key:      CONFIG.razorpayKey,
+        amount:   Math.round(currentOrderDetails.total * 100),
+        currency: 'INR',
         name:     CONFIG.businessName,
         description,
         handler:  response => handlePaymentSuccess(response, customerDetails),
@@ -544,39 +503,14 @@ function openRazorpayWithOrder(order, description, customerDetails) {
             }
         }
     };
-    const rzp = new Razorpay(options);
-    rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); });
-    rzp.open();
-}
 
-// Fallback — direct Razorpay (still works, proven)
-function openRazorpayDirect(description, customerDetails) {
-    const options = {
-        key:      CONFIG.razorpayKey,
-        amount:   Math.round(currentOrderDetails.total * 100),
-        currency: 'INR',
-        name:     CONFIG.businessName,
-        description,
-        handler:  response => handlePaymentSuccess(response, customerDetails),
-        prefill:  { name: customerDetails.name, contact: customerDetails.phone },
-        notes: {
-            address:  customerDetails.address,
-            landmark: customerDetails.landmark,
-            pin:      customerDetails.pin
-        },
-        theme: { color: '#00b4d8' },
-        modal: { ondismiss: () => console.log('Payment cancelled') },
-        config: {
-            display: {
-                blocks: { banks: { name: 'Pay using UPI', instruments: [{ method: 'upi' }] } },
-                sequence: ['block.banks'],
-                preferences: { show_default_blocks: true }
-            }
-        }
-    };
-    const rzp = new Razorpay(options);
-    rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); });
-    rzp.open();
+    if (typeof Razorpay !== 'undefined') {
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', r => { alert('Payment failed. Please try again.'); console.error(r.error); });
+        setTimeout(() => rzp.open(), 300);
+    } else {
+        alert('Payment gateway not loaded. Please refresh.');
+    }
 }
 
 // ─── PAYMENT SUCCESS ──────────────────────────────────────────────────────────
@@ -599,21 +533,26 @@ function handlePaymentSuccess(response, customerDetails) {
             : `${currentOrderDetails.weight}g`;
     }
 
-    const orderData = {
+    const payload = {
+        type:           'order_complete',
         orderId,
         paymentId:      response.razorpay_payment_id,
+        customerName:   customerDetails.name,
+        customerPhone:  customerDetails.phone,
         product:        productSummary,
-        icon:           currentOrderDetails.isCartOrder ? '🛒' : currentProduct.icon,
-        weight:         weightText,
         quantity:       currentOrderDetails.quantity,
+        weight:         weightText,
         pricePerKg:     currentOrderDetails.isCartOrder ? 'Multiple' : currentProduct.price,
-        amount:         currentOrderDetails.total,
-        customerDetails,
-        timestamp:      new Date().toISOString(),
-        stockRemaining: remaining
+        amount:         currentOrderDetails.total.toFixed(2),
+        address:        customerDetails.address,
+        landmark:       customerDetails.landmark || '',
+        pin:            customerDetails.pin,
+        stockRemaining: remaining || '',
+        timestamp:      new Date().toISOString()
     };
 
-    sendOrderToServer(orderData);
+    // Send to Google Apps Script via form submission (no CORS issues)
+    sendViaForm(payload);
 
     setTimeout(() => {
         document.getElementById('processingIndicator').style.display = 'none';
@@ -627,60 +566,53 @@ function handlePaymentSuccess(response, customerDetails) {
     }, 2000);
 }
 
-// ─── SINGLE ORDER NOTIFICATION (saves to sheet ONCE + sends email ONCE) ───────
-function sendOrderToServer(orderData) {
-    const d = orderData;
+// ─── SEND VIA FORM (bypasses CORS completely) ─────────────────────────────────
+function sendViaForm(payload) {
+    try {
+        // Create hidden form and submit to GAS
+        const form   = document.createElement('form');
+        form.method  = 'POST';
+        form.action  = CONFIG.webhookUrl;
+        form.target  = 'hidden_iframe'; // submit to hidden iframe — no page redirect
+        form.style.display = 'none';
 
-    const payload = {
-        type:           'order_complete',
-        orderId:        d.orderId,
-        paymentId:      d.paymentId,
-        customerName:   d.customerDetails.name,
-        customerPhone:  d.customerDetails.phone,
-        product:        d.product,
-        quantity:       d.quantity,
-        weight:         d.weight,
-        pricePerKg:     d.pricePerKg,
-        amount:         d.amount.toFixed(2),
-        address:        d.customerDetails.address,
-        landmark:       d.customerDetails.landmark || '',
-        pin:            d.customerDetails.pin,
-        stockRemaining: d.stockRemaining,
-        timestamp:      d.timestamp
-    };
+        // Add hidden iframe if not exists
+        if (!document.getElementById('hidden_iframe')) {
+            const iframe = document.createElement('iframe');
+            iframe.name  = 'hidden_iframe';
+            iframe.id    = 'hidden_iframe';
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+        }
 
-    // Use GET request with params — avoids CORS issues completely
-    const params = new URLSearchParams({
-        type:           payload.type,
-        orderId:        payload.orderId,
-        paymentId:      payload.paymentId,
-        customerName:   payload.customerName,
-        customerPhone:  payload.customerPhone,
-        product:        payload.product,
-        quantity:       payload.quantity,
-        weight:         payload.weight,
-        pricePerKg:     payload.pricePerKg,
-        amount:         payload.amount,
-        address:        payload.address,
-        landmark:       payload.landmark,
-        pin:            payload.pin,
-        stockRemaining: payload.stockRemaining || '',
-        timestamp:      payload.timestamp
-    });
-
-    fetch(CONFIG.webhookUrl + '?' + params.toString())
-        .then(r => r.json())
-        .then(res => console.log('✅ Order sent:', res))
-        .catch(e  => {
-            // Fallback to POST no-cors if GET fails
-            console.log('GET failed, trying POST...');
-            fetch(CONFIG.webhookUrl, {
-                method:  'POST',
-                mode:    'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(payload)
-            }).catch(e2 => console.error('❌ Both attempts failed:', e2));
+        // Add all payload fields as hidden inputs
+        Object.keys(payload).forEach(key => {
+            const input   = document.createElement('input');
+            input.type    = 'hidden';
+            input.name    = key;
+            input.value   = payload[key];
+            form.appendChild(input);
         });
+
+        document.body.appendChild(form);
+        form.submit();
+
+        // Clean up after submit
+        setTimeout(() => {
+            document.body.removeChild(form);
+        }, 3000);
+
+        console.log('✅ Order submitted via form');
+    } catch(err) {
+        console.error('Form submit failed:', err);
+        // Last resort fallback
+        fetch(CONFIG.webhookUrl, {
+            method: 'POST',
+            mode:   'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body:   JSON.stringify(payload)
+        });
+    }
 }
 
 // ─── MODALS ───────────────────────────────────────────────────────────────────
@@ -700,7 +632,7 @@ function closeModal() {
     document.getElementById('deliveryPin').value = currentUserPin;
 }
 
-// ─── POPSTATE (browser back button) ──────────────────────────────────────────
+// ─── POPSTATE ─────────────────────────────────────────────────────────────────
 window.addEventListener('popstate', function(e) {
     const state = e.state;
     if (!state || state === 'main') {
