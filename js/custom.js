@@ -73,7 +73,7 @@ let currentOrderDetails = null;
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 function init() {
     loadStock();
-    const storedPin = sessionStorage.getItem(CONFIG.sessionStorageKey);
+    const storedPin = localStorage.getItem(CONFIG.sessionStorageKey);
     if (storedPin && CONFIG.validPinCodes.includes(storedPin)) {
         currentUserPin = storedPin;
         document.getElementById('currentPin').textContent = 'PIN: ' + storedPin;
@@ -131,7 +131,7 @@ function verifyPinCode() {
         return;
     }
     if (CONFIG.validPinCodes.includes(pin)) {
-        sessionStorage.setItem(CONFIG.sessionStorageKey, pin);
+        localStorage.setItem(CONFIG.sessionStorageKey, pin);
         currentUserPin = pin;
         document.getElementById('currentPin').textContent = 'PIN: ' + pin;
         document.getElementById('deliveryPin').value = pin;
@@ -152,7 +152,7 @@ function retryPinCode() {
     document.getElementById('pinCodeInput').classList.remove('is-invalid');
 }
 function changePinCode() {
-    sessionStorage.removeItem(CONFIG.sessionStorageKey);
+    localStorage.removeItem(CONFIG.sessionStorageKey);
     currentUserPin = '';
     ['mainPage','paymentPage'].forEach(id => document.getElementById(id).style.display = 'none');
     retryPinCode();

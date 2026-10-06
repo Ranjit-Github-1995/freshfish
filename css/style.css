@@ -944,3 +944,13 @@ a { text-decoration: none; }
 .ffm-modal .text-muted{
     color: #fff;
 }
+
+/* ══ APP / PWA ═════════════════════════════════════════════════════════════ */
+.install-nav-link { color: var(--cyan) !important; font-weight: 600; }
+
+/* When opened as an installed app */
+html.is-app body {
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
