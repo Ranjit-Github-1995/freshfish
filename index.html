@@ -236,116 +236,143 @@
 </div>
 
 <!-- ══ PAYMENT PAGE ═══════════════════════════════════════════ -->
-<div id="paymentPage" style="display:none;">
-    <div class="container py-5">
-        <button class="btn btn-back mb-4" onclick="showMainPage()">
-            <i class="fas fa-arrow-left me-2"></i>Back to Product
-        </button>
-        <div class="text-center mb-5">
-            <h2 class="page-title"><i class="fas fa-lock me-3 text-success"></i>Complete Your Order</h2>
-            <p class="page-sub"><i class="fas fa-shield-alt me-2 text-success"></i>Secured & encrypted by Razorpay</p>
+<!-- ══ PAYMENT PAGE ═══════════════════════════════════════════ -->
+<div id="paymentPage" class="co-page" style="display:none;">
+    <div class="container co-wrap">
+
+        <!-- Top bar: back + progress -->
+        <div class="co-topbar">
+            <button type="button" class="co-back" onclick="showMainPage()">
+                <i class="fas fa-arrow-left"></i> Continue shopping
+            </button>
+            <ol class="co-steps" aria-label="Checkout progress">
+                <li class="is-done"><span class="co-step-dot"><i class="fas fa-check"></i></span>Cart</li>
+                <li class="is-active" aria-current="step"><span class="co-step-dot">2</span>Details</li>
+                <li><span class="co-step-dot">3</span>Payment</li>
+            </ol>
         </div>
-        <div class="row g-4">
-            <!-- Left — Customer Details -->
-            <div class="col-md-6">
-                <div class="pay-card">
-                    <h4 class="pay-card-title"><i class="fas fa-user-circle me-2"></i>Your Details</h4>
-                    <form id="paymentForm">
-                        <div class="ffm-field mb-3">
-                            <label class="ffm-label"><i class="fas fa-user me-2"></i>Full Name <span class="required">*</span></label>
-                            <input type="text" class="form-control ffm-input" id="customerName" placeholder="Enter your full name" required>
-                        </div>
-                        <div class="ffm-field mb-3">
-                            <label class="ffm-label"><i class="fas fa-mobile-alt me-2"></i>WhatsApp Number <span class="required">*</span></label>
-                            <div class="input-group ffm-input-group">
-                                <span class="input-group-text ffm-input-prefix"><i class="fas fa-flag me-1"></i>+91</span>
-                                <input type="tel" class="form-control ffm-input" id="customerPhone" placeholder="9876543210" maxlength="10" required>
+
+        <h1 class="co-title">Checkout</h1>
+
+        <div class="row g-4 align-items-start">
+
+            <!-- LEFT: details -->
+            <div class="col-lg-7">
+                <form id="paymentForm" novalidate>
+
+                    <section class="co-card">
+                        <header class="co-card-head">
+                            <span class="co-num">1</span>
+                            <div>
+                                <h2>Contact details</h2>
+                                <p>Your bill is sent to this WhatsApp number</p>
                             </div>
-                            <small class="field-hint"><i class="fab fa-whatsapp me-1 text-success"></i>WhatsApp bill sent to this number</small>
-                        </div>
-
-                        <div class="pay-section-divider"><i class="fas fa-map-marked-alt me-2"></i>Delivery Address</div>
-
-                        <div class="ffm-field mb-3">
-                            <label class="ffm-label"><i class="fas fa-home me-2"></i>Complete Address <span class="required">*</span></label>
-                            <textarea class="form-control ffm-input" id="customerAddress" rows="3" placeholder="House No., Street, Area, City" required></textarea>
-                        </div>
-                        <div class="ffm-field mb-3">
-                            <label class="ffm-label"><i class="fas fa-landmark me-2"></i>Landmark <span class="required">*</span></label>
-                            <input type="text" class="form-control ffm-input" id="customerLandmark" placeholder="Near school, temple, bank..." required>
-                        </div>
-                        <div class="ffm-field mb-3">
-                            <label class="ffm-label"><i class="fas fa-map-pin me-2"></i>PIN Code</label>
-                            <div class="pin-readonly-wrap">
-                                <input type="text" class="form-control ffm-input" id="deliveryPin" readonly>
-                                <span class="pin-verified"><i class="fas fa-check-circle"></i> Delivery available</span>
+                        </header>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="co-label" for="customerName">Full name</label>
+                                <input type="text" class="form-control co-input" id="customerName"
+                                       placeholder="e.g. Rahul Das" autocomplete="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="co-label" for="customerPhone">WhatsApp number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text co-prefix">+91</span>
+                                    <input type="tel" class="form-control co-input" id="customerPhone"
+                                           placeholder="10-digit mobile number" maxlength="10"
+                                           inputmode="numeric" autocomplete="tel-national" required>
+                                </div>
                             </div>
                         </div>
-                    </form>
-                </div>
+                    </section>
+
+                    <section class="co-card">
+                        <header class="co-card-head">
+                            <span class="co-num">2</span>
+                            <div>
+                                <h2>Delivery address</h2>
+                                <p>Where should we bring your order?</p>
+                            </div>
+                        </header>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="co-label" for="customerAddress">House no., street and area</label>
+                                <textarea class="form-control co-input" id="customerAddress" rows="2"
+                                          placeholder="e.g. 12/3, Station Road, Ward 5" autocomplete="street-address" required></textarea>
+                            </div>
+                            <div class="col-md-7">
+                                <label class="co-label" for="customerLandmark">Landmark</label>
+                                <input type="text" class="form-control co-input" id="customerLandmark"
+                                       placeholder="Near school, temple, bank..." required>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="co-label" for="deliveryPin">PIN code</label>
+                                <div class="co-pin">
+                                    <input type="text" class="form-control co-input" id="deliveryPin" readonly>
+                                    <button type="button" class="co-pin-change" onclick="changePinCode()">Change</button>
+                                </div>
+                                <small class="co-ok"><i class="fas fa-check-circle"></i> We deliver here</small>
+                            </div>
+                        </div>
+                    </section>
+
+                </form>
+
+                <section class="co-card co-slot">
+                    <div class="co-slot-icon"><i class="fas fa-truck"></i></div>
+                    <div>
+                        <h3>Delivery tomorrow, before 9 AM</h3>
+                        <p>Hygienic packaging, kept cold from catch to your door.</p>
+                    </div>
+                </section>
             </div>
 
-            <!-- Right — Order Summary -->
-            <div class="col-md-6">
-                <div class="pay-card order-summary-card">
-                    <h4 class="pay-card-title"><i class="fas fa-receipt me-2"></i>Order Summary</h4>
+            <!-- RIGHT: summary -->
+            <div class="col-lg-5">
+                <aside class="co-card co-summary">
+                    <header class="co-summary-head">
+                        <h2>Order summary</h2>
+                        <span class="co-count" id="coItemCount">1 item</span>
+                    </header>
 
-                    <div class="order-summary-box" id="orderSummaryBox">
-                        <div class="order-product-row">
-                            <div class="order-product-icon" id="orderProductIcon">🐟</div>
-                            <div class="order-product-info" id="orderSummary"></div>
-                        </div>
-                        <div class="order-total">
-                            <span><i class="fas fa-calculator me-2"></i>Total Amount</span>
-                            <strong id="finalAmount">₹0</strong>
-                        </div>
-                    </div>
+                    <div class="co-items" id="orderSummary"></div>
 
-                    <!-- Delivery info -->
-                    <div class="delivery-info-box mt-3">
-                        <div class="delivery-info-item">
-                            <i class="fas fa-truck text-cyan"></i>
-                            <span>Delivery tomorrow morning before 9 AM</span>
-                        </div>
-                        <div class="delivery-info-item">
-                            <i class="fas fa-leaf text-success"></i>
-                            <span>100% fresh, hygienic packaging</span>
-                        </div>
-                    </div>
+                    <dl class="co-bill">
+                        <div><dt>Item total</dt><dd id="subtotalAmount">₹0.00</dd></div>
+                        <div><dt>Delivery</dt><dd class="co-free">Free</dd></div>
+                        <div class="co-bill-total"><dt>To pay</dt><dd id="finalAmount">₹0.00</dd></div>
+                    </dl>
 
-                    <!-- Payment icons -->
-                    <div class="payment-icons-row mt-3">
-                        <span class="pay-icon-label"><i class="fas fa-credit-card me-2"></i>Accepted Payments</span>
-                        <div class="pay-icons-list">
-                            <span class="pay-icon-pill"><i class="fas fa-mobile-alt me-1"></i>UPI</span>
-                            <i class="fab fa-cc-visa fa-xl" style="color:#1a1f71"></i>
-                            <i class="fab fa-cc-mastercard fa-xl" style="color:#eb001b"></i>
-                            <i class="fab fa-cc-amex fa-xl" style="color:#2e77bc"></i>
-                            <i class="fas fa-university fa-xl text-secondary"></i>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-pay w-100 mt-4" onclick="processPayment()">
-                        <i class="fas fa-lock me-2"></i>Pay Now <span id="payButtonAmount">₹0</span>
+                    <button type="button" class="co-pay" onclick="processPayment()">
+                        <i class="fas fa-lock"></i> Pay <span id="payButtonAmount">₹0.00</span>
                     </button>
 
-                    <div class="whatsapp-note mt-3">
-                        <i class="fab fa-whatsapp me-2"></i>
-                        Bill sent to your WhatsApp after payment
+                    <div class="co-methods">
+                        <span>Pay with</span>
+                        <span class="co-chip">UPI</span>
+                        <span class="co-chip">Cards</span>
+                        <span class="co-chip">Netbanking</span>
                     </div>
-                    <div class="secure-note text-center mt-2">
-                        <small><i class="fas fa-shield-alt me-1 text-success"></i>100% Secure · Encrypted by Razorpay</small>
-                    </div>
-                </div>
+
+                    <ul class="co-assure">
+                        <li><i class="fas fa-shield-alt"></i>Payments secured by Razorpay</li>
+                        <li><i class="fab fa-whatsapp"></i>Bill on WhatsApp right after payment</li>
+                        <li><i class="fas fa-phone"></i>Our team calls to confirm your order</li>
+                    </ul>
+                </aside>
             </div>
         </div>
     </div>
 
-    <!-- Payment Page Footer -->
-    <div class="pay-footer">
-        <i class="fas fa-lock me-2"></i>Your data is safe & secure
-        <span class="mx-3">·</span>
-        <i class="fas fa-fish me-2"></i>Fresh Fish Market © 2025
+    <!-- Mobile sticky pay bar -->
+    <div class="co-mobile-bar">
+        <div class="co-mobile-total">
+            <small>To pay</small>
+            <strong id="mobilePayAmount">₹0.00</strong>
+        </div>
+        <button type="button" class="co-pay" onclick="processPayment()">
+            <i class="fas fa-lock"></i> Pay now
+        </button>
     </div>
 </div>
 

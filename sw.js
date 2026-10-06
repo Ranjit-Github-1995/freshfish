@@ -1,7 +1,7 @@
 // sw.js — Fresh Fish Market service worker
 // Bump this version every time you change index.html, CSS or JS,
 // so customers' phones download the new files.
-const VERSION = 'ffm-v1';
+const VERSION = 'ffm-v2';
 const STATIC_CACHE = VERSION + '-static';
 const RUNTIME_CACHE = VERSION + '-runtime';
 

@@ -326,33 +326,17 @@ function buyNowFromCard(productId) {
     document.getElementById('mainPage').style.display    = 'none';
     document.getElementById('paymentPage').style.display = 'block';
 
-    renderCheckoutSummary([{ icon: product.icon, productName: product.name, quantity,
-        weight: weightText, pricePerKg: product.price, price: total }], total);
+    document.getElementById('orderProductIcon').textContent = product.icon;
+    document.getElementById('orderSummary').innerHTML = `
+        <strong>${product.name}</strong>
+        <div style="margin-top:4px;color:var(--text-muted);font-size:.85rem;">
+            ${quantity} × ${weightText} &nbsp;·&nbsp; ₹${product.price}/kg
+        </div>`;
+    document.getElementById('finalAmount').textContent     = '₹' + total.toFixed(2);
+    document.getElementById('payButtonAmount').textContent = '₹' + total.toFixed(2);
     document.getElementById('deliveryPin').value = currentUserPin;
     window.scrollTo(0, 0);
     history.pushState({ page: 'payment' }, '', window.location.pathname);
-}
-
-// ─── CHECKOUT SUMMARY ─────────────────────────────────────────────────────────
-function formatRupees(n) {
-    return '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function renderCheckoutSummary(items, total) {
-    document.getElementById('orderSummary').innerHTML = items.map(item => `
-        <div class="co-item">
-            <div class="co-item-thumb">${item.icon}</div>
-            <div class="co-item-info">
-                <div class="co-item-name">${item.productName}</div>
-                <div class="co-item-meta">${item.quantity} × ${item.weight} · ₹${item.pricePerKg}/kg</div>
-            </div>
-            <div class="co-item-price">${formatRupees(item.price)}</div>
-        </div>`).join('');
-    const count = items.length;
-    document.getElementById('coItemCount').textContent     = count + (count === 1 ? ' item' : ' items');
-    document.getElementById('subtotalAmount').textContent  = formatRupees(total);
-    document.getElementById('finalAmount').textContent     = formatRupees(total);
-    document.getElementById('payButtonAmount').textContent = formatRupees(total);
-    document.getElementById('mobilePayAmount').textContent = formatRupees(total);
 }
 
 // ─── CART CHECKOUT ────────────────────────────────────────────────────────────
@@ -360,6 +344,19 @@ function cartCheckout() {
     if (cartItems.length === 0) return;
 
     const grandTotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+    let summaryHTML  = '';
+    cartItems.forEach(item => {
+        summaryHTML += `
+            <div class="checkout-item-row">
+                <span class="checkout-item-icon">${item.icon}</span>
+                <div class="checkout-item-detail">
+                    <strong>${item.productName}</strong>
+                    <small>${item.quantity} × ${item.weight} &nbsp;·&nbsp; ₹${item.pricePerKg}/kg</small>
+                </div>
+                <span class="checkout-item-price">₹${item.price.toFixed(2)}</span>
+            </div>`;
+    });
+
     const firstItem    = cartItems[0];
     const firstProduct = products.find(p => p.id === firstItem.productId) || products[0];
     currentProduct     = firstProduct;
@@ -373,7 +370,10 @@ function cartCheckout() {
     closeCart();
     document.getElementById('mainPage').style.display    = 'none';
     document.getElementById('paymentPage').style.display = 'block';
-    renderCheckoutSummary(cartItems, grandTotal);
+    document.getElementById('orderProductIcon').textContent = cartItems.length > 1 ? '🛒' : firstItem.icon;
+    document.getElementById('orderSummary').innerHTML       = summaryHTML;
+    document.getElementById('finalAmount').textContent      = '₹' + grandTotal.toFixed(2);
+    document.getElementById('payButtonAmount').textContent  = '₹' + grandTotal.toFixed(2);
     document.getElementById('deliveryPin').value = currentUserPin;
     window.scrollTo(0, 0);
 }
