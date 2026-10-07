@@ -3,7 +3,8 @@
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const CONFIG = {
     validPinCodes: ['712503', '712502', '712148'],
-    bannerStartHour: 14,
+    deliveryStartHour: 6,    // deliveries start 6 AM
+    deliveryEndHour: 20,     // orders after 8 PM go out next day
     sessionStorageKey: 'userPinCode',
     razorpayKey: 'rzp_live_T8a5xzy3zVLPLR',
     businessName: 'Fresh Fish Market',
@@ -86,7 +87,7 @@ function init() {
     const storedPin = localStorage.getItem(CONFIG.sessionStorageKey);
     if (storedPin && CONFIG.validPinCodes.includes(storedPin)) {
         currentUserPin = storedPin;
-        document.getElementById('currentPin').textContent = 'PIN: ' + storedPin;
+        document.getElementById('currentPin').textContent = storedPin;
         document.getElementById('deliveryPin').value = storedPin;
         document.getElementById('pinModal').style.display = 'none';
         document.getElementById('mainPage').style.display = 'block';
@@ -97,18 +98,54 @@ function init() {
     }
     checkTimeAndShowBanner();
     setInterval(checkTimeAndShowBanner, 60000);
+    renderHeroSpecial();
+    const yr = document.getElementById('ftYear');
+    if (yr) yr.textContent = new Date().getFullYear();
     setInterval(loadStock, 60000);
     setupEventListeners();
 }
 
+// ─── DELIVERY SLOT ────────────────────────────────────────────────────────────
+// Deliveries run 6 AM – 8 PM. Orders after 8 PM are delivered the next day.
+function fmtHour(h) { return (h % 12 || 12) + (h < 12 ? ' AM' : ' PM'); }
+function getDeliverySlot(now = new Date()) {
+    const h = now.getHours();
+    const start = fmtHour(CONFIG.deliveryStartHour), end = fmtHour(CONFIG.deliveryEndHour);
+    if (h < CONFIG.deliveryStartHour) return { today: true,  text: `Today from ${start}` };
+    if (h < CONFIG.deliveryEndHour)   return { today: true,  text: `Today by ${end}` };
+    return { today: false, text: `Tomorrow from ${start}` };
+}
+// Hero "Today's special" card: change SPECIAL_ID to feature another fish
+const SPECIAL_ID = 3;
+function renderHeroSpecial() {
+    const p = products.find(x => x.id === SPECIAL_ID);
+    if (!p) return;
+    const name = document.getElementById('hvName'), price = document.getElementById('hvPrice');
+    if (name)  name.textContent  = p.name;
+    if (price) price.textContent = '₹' + p.price.toLocaleString('en-IN') + '/kg';
+    const img = document.getElementById('hvImg');
+    if (img && p.image) img.src = p.image;
+}
+function updateDeliveryCopy() {
+    const slot = getDeliverySlot();
+    const announce = slot.today
+        ? `Fresh catch, delivered the same day`
+        : `Orders placed now arrive tomorrow from ${fmtHour(CONFIG.deliveryStartHour)}`;
+    document.querySelectorAll('[data-delivery]').forEach(el => {
+        const kind = el.dataset.delivery;
+        el.textContent = kind === 'announce' ? announce
+                       : kind === 'slot-lower' ? slot.text.charAt(0).toLowerCase() + slot.text.slice(1)
+                       : slot.text;
+    });
+}
+
 // ─── BANNER ───────────────────────────────────────────────────────────────────
 function checkTimeAndShowBanner() {
-    const show = new Date().getHours() >= CONFIG.bannerStartHour;
-    document.getElementById('deliveryBanner').style.display = show ? 'flex' : 'none';
-    document.getElementById('navbar').classList.toggle('with-banner', show);
+    updateDeliveryCopy();
+    document.getElementById('deliveryBanner').style.display = 'flex';
     const navbar = document.getElementById('navbar');
-    const navH   = navbar.offsetHeight + (show ? 28 : 0);
-    document.getElementById('cartDrawer').style.top = navH + 'px';
+    navbar.classList.add('with-banner');
+    document.getElementById('cartDrawer').style.top = (navbar.offsetHeight + 32) + 'px';
 }
 
 // ─── EVENT LISTENERS ──────────────────────────────────────────────────────────
@@ -143,7 +180,7 @@ function verifyPinCode() {
     if (CONFIG.validPinCodes.includes(pin)) {
         localStorage.setItem(CONFIG.sessionStorageKey, pin);
         currentUserPin = pin;
-        document.getElementById('currentPin').textContent = 'PIN: ' + pin;
+        document.getElementById('currentPin').textContent = pin;
         document.getElementById('deliveryPin').value = pin;
         document.getElementById('pinModal').style.display = 'none';
         document.getElementById('mainPage').style.display = 'block';
@@ -153,6 +190,12 @@ function verifyPinCode() {
         document.getElementById('overlay').style.display  = 'block';
         document.getElementById('notAvailableModal').style.display = 'block';
     }
+}
+function pickPin(pin) {
+    const input = document.getElementById('pinCodeInput');
+    input.value = pin;
+    input.classList.remove('is-invalid');
+    verifyPinCode();
 }
 function retryPinCode() {
     document.getElementById('overlay').style.display = 'none';
@@ -179,77 +222,57 @@ function createProductCard(product) {
     const stockLeft  = getStock(product.id);
     const outOfStock = stockLeft <= 0;
     const lowStock   = !outOfStock && stockLeft <= 2;
+    const defaultPrice = formatRupees(product.price * 0.5);
 
     const badge = outOfStock
-        ? `<div class="badge-out-of-stock"><i class="fas fa-times-circle me-1"></i>Out of Stock</div>`
+        ? `<span class="pc-badge pc-badge-out"><i class="far fa-circle-xmark"></i>Sold out today</span>`
         : lowStock
-            ? `<div class="badge-low-stock"><i class="fas fa-exclamation-triangle me-1"></i>Only ${stockLeft.toFixed(1)}kg left!</div>`
-            : `<div class="badge-fresh"><i class="fas fa-leaf me-1"></i>Fresh Daily</div>`;
+            ? `<span class="pc-badge pc-badge-low"><i class="far fa-hourglass-half"></i>Only ${stockLeft.toFixed(1)} kg left</span>`
+            : `<span class="pc-badge"><i class="far fa-sun"></i>Fresh today</span>`;
 
-    const defaultPrice = (product.price * 0.5).toFixed(2);
+    const weights = [[500,'500 g'],[750,'750 g'],[1000,'1 kg']].map(([g,label]) => `
+        <input type="radio" name="weight_${product.id}" id="w${product.id}_${g}" value="${g}" ${g===500?'checked':''}
+               onchange="updateCardPrice(${product.id}, ${product.price})">
+        <label for="w${product.id}_${g}">${label}</label>`).join('');
 
-    const body = outOfStock
-        ? `<div class="product-body">
-               <div class="product-name">${product.name}</div>
-               <div class="product-desc">${product.description}</div>
-               <div class="card-rate-label"><i class="fas fa-tag me-1"></i>₹${product.price}/kg</div>
-               <button class="btn-out-of-stock" disabled>
-                   <i class="fas fa-times-circle me-1"></i>Out of Stock
+    const controls = outOfStock
+        ? `<button class="pc-soldout" disabled><i class="far fa-bell"></i>Back tomorrow</button>`
+        : `<div class="pc-field-label">Weight</div>
+           <div class="pc-weights" role="radiogroup" aria-label="Weight">${weights}</div>
+           <div class="pc-qty-row">
+               <div class="pc-stepper" aria-label="Quantity">
+                   <button type="button" aria-label="Decrease" onclick="changeCardQty(${product.id}, -1, ${product.price})">&minus;</button>
+                   <span id="card_qty_${product.id}">1</span>
+                   <button type="button" aria-label="Increase" onclick="changeCardQty(${product.id}, 1, ${product.price})">+</button>
+               </div>
+               <div class="pc-total">
+                   <small>Total</small>
+                   <strong class="card-total-price" id="card_price_${product.id}">${defaultPrice}</strong>
+               </div>
+           </div>
+           <div class="pc-actions">
+               <button type="button" class="pc-btn-cart" onclick="addToCartFromCard(${product.id})" aria-label="Add ${product.name} to cart" title="Add to cart">
+                   <i class="ffi ffi-basket"></i><span>Add</span>
                </button>
-           </div>`
-        : `<div class="product-body">
-               <div class="product-name">${product.name}</div>
-               <div class="product-desc">${product.description}</div>
-               <div class="card-rate-label"><i class="fas fa-tag me-1"></i>₹${product.price}/kg</div>
-               <div class="card-weight-selector">
-                   <label class="card-weight-label"><i class="fas fa-weight me-1"></i>Select Weight</label>
-                   <div class="card-weight-btns">
-                       <input type="radio" name="weight_${product.id}" id="w${product.id}_500" value="500" checked
-                              onchange="updateCardPrice(${product.id}, ${product.price})">
-                       <label class="card-w-btn" for="w${product.id}_500">500g</label>
-                       <input type="radio" name="weight_${product.id}" id="w${product.id}_750" value="750"
-                              onchange="updateCardPrice(${product.id}, ${product.price})">
-                       <label class="card-w-btn" for="w${product.id}_750">750g</label>
-                       <input type="radio" name="weight_${product.id}" id="w${product.id}_1000" value="1000"
-                              onchange="updateCardPrice(${product.id}, ${product.price})">
-                       <label class="card-w-btn" for="w${product.id}_1000">1 kg</label>
-                   </div>
-               </div>
-               <div class="card-qty-row">
-                   <label class="card-weight-label"><i class="fas fa-sort-numeric-up me-1"></i>Quantity</label>
-                   <div class="card-qty-selector">
-                       <button class="card-qty-btn" onclick="changeCardQty(${product.id}, -1, ${product.price})">
-                           <i class="fas fa-minus"></i>
-                       </button>
-                       <span class="card-qty-display" id="card_qty_${product.id}">1</span>
-                       <button class="card-qty-btn" onclick="changeCardQty(${product.id}, 1, ${product.price})">
-                           <i class="fas fa-plus"></i>
-                       </button>
-                   </div>
-               </div>
-               <div class="card-price-row">
-                   <span class="card-total-label"><i class="fas fa-receipt me-1"></i>Total</span>
-                   <span class="card-total-price" id="card_price_${product.id}">₹${defaultPrice}</span>
-               </div>
-               <div class="card-action-btns">
-                   <button class="btn-card-cart" onclick="addToCartFromCard(${product.id})">
-                       <i class="fas fa-cart-plus me-1"></i>Add to Cart
-                   </button>
-                   <button class="btn-card-buy" onclick="buyNowFromCard(${product.id})">
-                       <i class="fas fa-bolt me-1"></i>Buy Now
-                   </button>
-               </div>
+               <button type="button" class="pc-btn-buy" onclick="buyNowFromCard(${product.id})">
+                   Buy now<i class="far fa-circle-right"></i>
+               </button>
            </div>`;
 
     return `
-        <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="product-card ${outOfStock ? 'card-out-of-stock' : ''}">
-                ${badge}
-                <div class="product-image-wrap">
+        <div class="col-xl-3 col-lg-4 col-sm-6">
+            <article class="pc ${outOfStock ? 'pc-out' : ''}">
+                <div class="pc-media">
                     ${productThumb(product, 'product-img')}
+                    ${badge}
+                    <span class="pc-price"><strong>₹${product.price.toLocaleString('en-IN')}</strong>/kg</span>
                 </div>
-                ${body}
-            </div>
+                <div class="pc-body">
+                    <h3 class="pc-name">${product.name}</h3>
+                    <p class="pc-desc">${product.description}</p>
+                    ${controls}
+                </div>
+            </article>
         </div>`;
 }
 
@@ -262,10 +285,8 @@ function updateCardPrice(productId, pricePerKg) {
     const total    = pricePerKg * (weight / 1000) * qty;
     const priceEl  = document.getElementById('card_price_' + productId);
     if (priceEl) {
-        priceEl.textContent     = '₹' + total.toFixed(2);
-        priceEl.style.transform = 'scale(1.15)';
-        priceEl.style.color     = '#06d6a0';
-        setTimeout(() => { priceEl.style.transform = 'scale(1)'; priceEl.style.color = ''; }, 300);
+        priceEl.textContent     = formatRupees(total);
+        priceEl.classList.remove('pc-bump'); void priceEl.offsetWidth; priceEl.classList.add('pc-bump');
     }
 }
 function changeCardQty(productId, delta, pricePerKg) {
@@ -404,6 +425,7 @@ function renderCartDrawer() {
     const badgeEl  = document.getElementById('cartCountBadge');
 
     if (badgeEl) badgeEl.textContent = cartItems.length;
+    updateBasketTotal();
     listEl.innerHTML = '';
 
     if (cartItems.length === 0) {
@@ -427,11 +449,17 @@ function renderCartDrawer() {
             </div>
             <div class="cart-item-price">₹${item.price.toFixed(2)}</div>
             <button class="cart-item-remove" onclick="removeCartItem(${idx})">
-                <i class="fas fa-trash"></i>
+                <i class="far fa-trash-can"></i>
             </button>`;
         listEl.appendChild(div);
     });
     subEl.textContent = '₹' + subtotal.toFixed(2);
+}
+function updateBasketTotal() {
+    const total = cartItems.reduce((sum, i) => sum + i.price, 0);
+    const el = document.getElementById('basketTotal');
+    if (el) el.textContent = formatRupees(total).replace('.00', '');
+    document.getElementById('cartCount').textContent = cartItems.length;
 }
 function removeCartItem(idx) {
     cartItems.splice(idx, 1);
@@ -625,6 +653,8 @@ function sendViaGETRequest(payload) {
 function showSuccessModal(orderId, customerDetails) {
     document.getElementById('orderId').textContent        = orderId;
     document.getElementById('confirmedPhone').textContent = '+91 ' + customerDetails.phone;
+    const slot = getDeliverySlot();
+    document.getElementById('confirmedSlot').textContent = slot.text.charAt(0).toLowerCase() + slot.text.slice(1);
     document.getElementById('overlay').style.display       = 'block';
     document.getElementById('successModal').style.display  = 'block';
 }
@@ -632,7 +662,7 @@ function closeModal() {
     document.getElementById('overlay').style.display      = 'none';
     document.getElementById('successModal').style.display = 'none';
     cartItems = []; cartCount = 0;
-    document.getElementById('cartCount').textContent = 0;
+    renderCartDrawer();
     showMainPage();
     document.getElementById('paymentForm').reset();
     document.getElementById('deliveryPin').value = currentUserPin;
@@ -653,6 +683,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 window.verifyPinCode     = verifyPinCode;
 window.retryPinCode      = retryPinCode;
+window.pickPin           = pickPin;
 window.changePinCode     = changePinCode;
 window.showMainPage      = showMainPage;
 window.processPayment    = processPayment;

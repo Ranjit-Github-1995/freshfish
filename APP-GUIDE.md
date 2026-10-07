@@ -13,7 +13,7 @@
 | `css/style.css` | Small block at the end for the install button and app mode. |
 | `js/custom.js` | PIN now saved in `localStorage` instead of `sessionStorage`, so customers don't re-enter it every time they open the app. |
 
-**Whenever you change index.html, CSS or JS later:** change `VERSION` at the top of `sw.js` (ffm-v1 → ffm-v2) so phones pick up the new files.
+**Updates:** the app now loads files network-first and updates itself, so customers see changes on their next open. You don't need to change anything in `sw.js` for normal updates.
 
 ## Step 1: Push and test the PWA
 

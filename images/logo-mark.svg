@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f4370"/><stop offset="1" stop-color="#061524"/>
+    </linearGradient>
+    <linearGradient id="fish" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9ff0ff"/><stop offset=".55" stop-color="#00b4d8"/><stop offset="1" stop-color="#0077a3"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6d27a"/><stop offset="1" stop-color="#c9962b"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="none" stroke="url(#gold)" stroke-opacity=".55" stroke-width="1.2"/>
+  <!-- tail -->
+  <path d="M16.5 32 L5.5 22 Q8.6 32 5.5 42 Z" fill="url(#fish)"/>
+  <!-- dorsal fin -->
+  <path d="M25.5 25.2 Q30.5 15.5 41.5 21.6 Q33.5 21.6 25.5 25.2 Z" fill="url(#fish)" opacity=".9"/>
+  <!-- body -->
+  <path d="M14 32 C21 24.5 31 21.6 41 22 C48.5 22.5 54 26.5 58 32 C54 37.5 48.5 41.5 41 42 C31 42.4 21 39.5 14 32 Z" fill="url(#fish)"/>
+  <!-- wave cut (negative space) -->
+  <path d="M18.5 35.2 C23.5 32.2 28 38.4 33.2 35.3 S43 32.4 48.6 34.9 S54.3 35.5 56.2 34.3" fill="none" stroke="#08223b" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- gill -->
+  <path d="M38.6 25.6 Q41.2 29.8 39.4 33.4" fill="none" stroke="#08223b" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>
+  <!-- eye -->
+  <circle cx="48.3" cy="29" r="2.1" fill="url(#gold)"/>
+  <circle cx="48.9" cy="28.4" r=".65" fill="#fff"/>
+  <!-- sparkle (fresh) -->
+  <path d="M52 10.5 L53 13.5 L56 14.5 L53 15.5 L52 18.5 L51 15.5 L48 14.5 L51 13.5 Z" fill="url(#gold)"/>
+</svg>

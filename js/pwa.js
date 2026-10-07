@@ -1,11 +1,30 @@
 // pwa.js — registers the service worker and shows an "Install app" button
 (function () {
-  // 1. Service worker
+  // 1. Service worker (auto-updates)
   if ('serviceWorker' in navigator) {
+    var hadController = !!navigator.serviceWorker.controller;
+    var reloading = false;
+
+    // When a new version takes over, reload once so the customer sees it right away.
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadController || reloading) return;
+      // Don't interrupt someone who is on the checkout page
+      var pay = document.getElementById('paymentPage');
+      if (pay && pay.style.display === 'block') return;
+      reloading = true;
+      window.location.reload();
+    });
+
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js').catch(function (err) {
-        console.warn('Service worker registration failed:', err);
-      });
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+        .then(function (reg) {
+          // Check for a new version whenever the app is opened again from the home screen
+          document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'visible') reg.update();
+          });
+          setInterval(function () { reg.update(); }, 30 * 60 * 1000);
+        })
+        .catch(function (err) { console.warn('Service worker registration failed:', err); });
     });
   }
 
