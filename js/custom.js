@@ -61,7 +61,17 @@ const products = [
 //     { id:10, name:'Lobster',     price:2850, description:'Live lobster',                             icon:'🦞', longDescription:'Premium live lobster is the ultimate luxury seafood.', origin:'Deep sea waters', bestFor:'Thermidor, Grilled, Butter preparations', calories:'90',  protein:'19g',   fat:'0.9g',  omega3:'0.2g', calcium:'96mg',  iron:'0.3mg' },
 //     { id:11, name:'Surmai',      price:920,  description:'King fish steaks',                         icon:'🐟', longDescription:'Surmai (King Fish) is a popular sea fish with firm texture.', origin:'Arabian Sea and Bay of Bengal', bestFor:'Fish steaks, Tandoori, Pan fry', calories:'139', protein:'22g',   fat:'5.2g',  omega3:'1.8g', calcium:'34mg',  iron:'1.7mg' },
 //     { id:12, name:'Bangda',      price:280,  description:'Indian mackerel',                          icon:'🐠', longDescription:'Bangda (Indian Mackerel) is an oily fish with strong flavor.', origin:'Coastal waters of India', bestFor:'Rava fry, Curry, Recheado preparations', calories:'205', protein:'18.6g', fat:'13.9g', omega3:'2.6g', calcium:'12mg',  iron:'1.6mg' }
-// ];
+];
+
+// ─── PRODUCT IMAGE ────────────────────────────────────────────────────────────
+// Shows the product photo if it has one, otherwise the emoji (or a fish).
+function productThumb(item, cls) {
+    const p   = item.image ? item : (products.find(x => x.id === item.productId) || item);
+    const alt = (p.name || item.productName || '').replace(/"/g, '');
+    return p.image
+        ? `<img src="${p.image}" alt="${alt}" class="${cls}" loading="lazy">`
+        : `<span class="${cls}-emoji">${p.icon || '🐟'}</span>`;
+}
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let currentProduct      = null;
@@ -236,7 +246,7 @@ function createProductCard(product) {
             <div class="product-card ${outOfStock ? 'card-out-of-stock' : ''}">
                 ${badge}
                 <div class="product-image-wrap">
-                    <span class="product-emoji">${product.icon}</span>
+                    ${productThumb(product, 'product-img')}
                 </div>
                 ${body}
             </div>
@@ -290,7 +300,7 @@ function addToCartFromCard(productId) {
         cartItems[existingIdx].quantity += quantity;
         cartItems[existingIdx].price = product.price * (weight / 1000) * cartItems[existingIdx].quantity;
     } else {
-        cartItems.push({ productId: product.id, productName: product.name, icon: product.icon,
+        cartItems.push({ productId: product.id, productName: product.name, image: product.image, icon: product.icon,
             pricePerKg: product.price, weight: weightText, weightGrams: weight, quantity, price: total });
     }
 
@@ -326,7 +336,7 @@ function buyNowFromCard(productId) {
     document.getElementById('mainPage').style.display    = 'none';
     document.getElementById('paymentPage').style.display = 'block';
 
-    renderCheckoutSummary([{ icon: product.icon, productName: product.name, quantity,
+    renderCheckoutSummary([{ productId: product.id, image: product.image, icon: product.icon, productName: product.name, quantity,
         weight: weightText, pricePerKg: product.price, price: total }], total);
     document.getElementById('deliveryPin').value = currentUserPin;
     window.scrollTo(0, 0);
@@ -340,7 +350,7 @@ function formatRupees(n) {
 function renderCheckoutSummary(items, total) {
     document.getElementById('orderSummary').innerHTML = items.map(item => `
         <div class="co-item">
-            <div class="co-item-thumb">${item.icon}</div>
+            <div class="co-item-thumb">${productThumb(item, 'co-thumb-img')}</div>
             <div class="co-item-info">
                 <div class="co-item-name">${item.productName}</div>
                 <div class="co-item-meta">${item.quantity} × ${item.weight} · ₹${item.pricePerKg}/kg</div>
@@ -410,7 +420,7 @@ function renderCartDrawer() {
         const div = document.createElement('div');
         div.className = 'cart-item';
         div.innerHTML = `
-            <div class="cart-item-icon">${item.icon}</div>
+            <div class="cart-item-icon">${productThumb(item, 'cart-thumb-img')}</div>
             <div class="cart-item-info">
                 <div class="cart-item-name">${item.productName}</div>
                 <div class="cart-item-meta">${item.quantity} × ${item.weight}</div>
