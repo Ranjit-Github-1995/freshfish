@@ -2,7 +2,7 @@
 // Strategy: NETWORK FIRST for everything on this site (pages, CSS, JS, images),
 // so customers always get the latest version when online. The cache is only
 // used when the phone is offline. Change VERSION when you upload big changes.
-const VERSION = 'ffm-v8';
+const VERSION = 'ffm-v9';
 const CACHE = VERSION;
 
 const APP_SHELL = [

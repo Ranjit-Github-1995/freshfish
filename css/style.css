@@ -3095,3 +3095,13 @@ html.is-app body {
 @media (max-width: 380px) {
     .logo-fish { height: 27px; }
 }
+
+/* ══ WHATSAPP ORDER BUTTON ═════════════════════════════════════════════════ */
+.pc-actions { grid-template-columns: auto 1fr auto; }
+.pc-btn-wa {
+    width: 44px; height: 44px; border-radius: 12px; border: 1.5px solid #bfe8cf; background: #effaf3;
+    color: #1a9e55; font-size: 1.3rem; display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.pc-btn-wa:hover { background: #25d366; border-color: #25d366; color: #fff; }
+.pc-btn-wa:focus-visible { outline: 3px solid rgba(37,211,102,.45); outline-offset: 2px; }

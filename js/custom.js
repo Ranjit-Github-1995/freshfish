@@ -74,6 +74,59 @@ function productThumb(item, cls) {
         : `<span class="${cls}-emoji">${p.icon || '🐟'}</span>`;
 }
 
+// ─── WEIGHT OPTIONS ───────────────────────────────────────────────────────────
+// One list used by the product cards and the WhatsApp messages, so both always match.
+const WEIGHT_OPTIONS = [[500, '500 g'], [750, '750 g'], [1000, '1 kg']];
+function weightLabel(grams) {
+    const opt = WEIGHT_OPTIONS.find(([g]) => g === grams);
+    return opt ? opt[1] : (grams >= 1000 ? grams / 1000 + ' kg' : grams + ' g');
+}
+
+// ─── WHATSAPP ─────────────────────────────────────────────────────────────────
+function whatsappLink(message) {
+    return 'https://wa.me/91' + CONFIG.whatsapp.adminPhone + '?text=' + encodeURIComponent(message);
+}
+function openWhatsApp(message) {
+    window.open(whatsappLink(message), '_blank', 'noopener');
+}
+// Product card button: sends the fish, the size the customer picked, quantity and price
+function whatsappOrder(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    const selected = document.querySelector(`input[name="weight_${productId}"]:checked`);
+    const grams    = selected ? parseInt(selected.value) : WEIGHT_OPTIONS[0][0];
+    const qtyEl    = document.getElementById('card_qty_' + productId);
+    const qty      = qtyEl ? parseInt(qtyEl.textContent) || 1 : 1;
+    const total    = product.price * (grams / 1000) * qty;
+    const lines = [
+        'Hi FreshFish Market, I would like to order:',
+        '',
+        '*' + product.name + '*',
+        'Preferred size: ' + weightLabel(grams),
+        'Quantity: ' + qty,
+        'Price: ₹' + product.price.toLocaleString('en-IN') + '/kg (approx. ' + formatRupees(total) + ')',
+        '',
+        'Delivery PIN: ' + (currentUserPin || '-'),
+        'Please confirm availability.'
+    ];
+    openWhatsApp(lines.join('\n'));
+}
+// General buttons (footer etc.): a template showing every size option
+function whatsappEnquiryMessage() {
+    return [
+        'Hi FreshFish Market, I would like to place an order.',
+        '',
+        'Fish: ',
+        'Preferred size: ' + WEIGHT_OPTIONS.map(w => w[1]).join(' / '),
+        'Quantity: ',
+        'Delivery PIN: ' + (currentUserPin || '')
+    ].join('\n');
+}
+function updateWhatsAppLinks() {
+    const url = whatsappLink(whatsappEnquiryMessage());
+    document.querySelectorAll('[data-wa="enquiry"]').forEach(a => { a.href = url; });
+}
+
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let currentProduct      = null;
 let cartCount           = 0;
@@ -99,6 +152,7 @@ function init() {
     checkTimeAndShowBanner();
     setInterval(checkTimeAndShowBanner, 60000);
     renderHeroSpecial();
+    updateWhatsAppLinks();
     const yr = document.getElementById('ftYear');
     if (yr) yr.textContent = new Date().getFullYear();
     setInterval(loadStock, 60000);
@@ -180,6 +234,7 @@ function verifyPinCode() {
     if (CONFIG.validPinCodes.includes(pin)) {
         localStorage.setItem(CONFIG.sessionStorageKey, pin);
         currentUserPin = pin;
+        updateWhatsAppLinks();
         document.getElementById('currentPin').textContent = pin;
         document.getElementById('deliveryPin').value = pin;
         document.getElementById('pinModal').style.display = 'none';
@@ -222,7 +277,7 @@ function createProductCard(product) {
     const stockLeft  = getStock(product.id);
     const outOfStock = stockLeft <= 0;
     const lowStock   = !outOfStock && stockLeft <= 2;
-    const defaultPrice = formatRupees(product.price * 0.5);
+    const defaultPrice = formatRupees(product.price * WEIGHT_OPTIONS[0][0] / 1000);
 
     const badge = outOfStock
         ? `<span class="pc-badge pc-badge-out"><i class="far fa-circle-xmark"></i>Sold out today</span>`
@@ -230,8 +285,9 @@ function createProductCard(product) {
             ? `<span class="pc-badge pc-badge-low"><i class="far fa-hourglass-half"></i>Only ${stockLeft.toFixed(1)} kg left</span>`
             : `<span class="pc-badge"><i class="far fa-sun"></i>Fresh today</span>`;
 
-    const weights = [[500,'500 g'],[750,'750 g'],[1000,'1 kg']].map(([g,label]) => `
-        <input type="radio" name="weight_${product.id}" id="w${product.id}_${g}" value="${g}" ${g===500?'checked':''}
+    const firstG  = WEIGHT_OPTIONS[0][0];
+    const weights = WEIGHT_OPTIONS.map(([g,label]) => `
+        <input type="radio" name="weight_${product.id}" id="w${product.id}_${g}" value="${g}" ${g===firstG?'checked':''}
                onchange="updateCardPrice(${product.id}, ${product.price})">
         <label for="w${product.id}_${g}">${label}</label>`).join('');
 
@@ -256,6 +312,9 @@ function createProductCard(product) {
                </button>
                <button type="button" class="pc-btn-buy" onclick="buyNowFromCard(${product.id})">
                    Buy now<i class="far fa-circle-right"></i>
+               </button>
+               <button type="button" class="pc-btn-wa" onclick="whatsappOrder(${product.id})" aria-label="Order ${product.name} on WhatsApp" title="Order on WhatsApp">
+                   <i class="fab fa-whatsapp"></i>
                </button>
            </div>`;
 
@@ -683,6 +742,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 window.verifyPinCode     = verifyPinCode;
 window.retryPinCode      = retryPinCode;
+window.whatsappOrder     = whatsappOrder;
 window.pickPin           = pickPin;
 window.changePinCode     = changePinCode;
 window.showMainPage      = showMainPage;
