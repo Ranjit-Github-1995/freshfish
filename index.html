@@ -17,7 +17,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=9">
+    <link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
 
@@ -62,9 +62,9 @@
             <img src="images/logo-fish-dark.svg" alt="FreshFish Market" class="logo-fish" width="216" height="52">
         </a>
         <div class="hd-actions">
-            <span class="hd-install" style="display:none;">
-                <a href="#" id="installAppBtn" class="hd-link" onclick="installApp(); return false;">
-                    <i class="far fa-circle-down"></i><span>Install app</span>
+            <span class="hd-install">
+                <a href="#" id="installAppBtn" class="hd-app" onclick="installApp(); return false;" aria-label="Install the FreshFish app">
+                    <i class="far fa-circle-down"></i><span class="hd-app-long">Install app</span><span class="hd-app-short">App</span>
                 </a>
             </span>
             <a href="#" class="hd-pin" onclick="changePinCode(); return false;" title="Change delivery PIN">
@@ -427,6 +427,16 @@
     </button>
 </div>
 
+<!-- Install help -->
+<div class="ffm-modal" id="installModal" style="display:none;" role="dialog" aria-labelledby="installTitle">
+    <img src="images/logo-mark.svg" alt="" class="im-icon" width="64" height="64">
+    <h3 id="installTitle">Install the FreshFish app</h3>
+    <p class="lead">Order in two taps, right from your home screen. It's free and takes no space.</p>
+    <div class="im-device"><i class="far fa-hand-pointer"></i><span id="installDevice">Your device</span></div>
+    <ol class="im-steps" id="installSteps"></ol>
+    <button class="btn btn-buy w-100" onclick="closeInstallHelp()">Got it</button>
+</div>
+
 <!-- Processing Indicator -->
 <div id="processingIndicator" class="processing-indicator" style="display:none;">
     <div class="spinner-border text-success mb-3" role="status"></div>
@@ -436,7 +446,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="js/custom.js?v=9"></script>
-<script src="js/pwa.js?v=9"></script>
+<script src="js/custom.js?v=11"></script>
+<script src="js/pwa.js?v=11"></script>
 </body>
 </html>

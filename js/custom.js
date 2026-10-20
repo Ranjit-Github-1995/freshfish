@@ -62,8 +62,8 @@ const products = [
 //     { id:10, name:'Lobster',     price:2850, description:'Live lobster',                             icon:'🦞', longDescription:'Premium live lobster is the ultimate luxury seafood.', origin:'Deep sea waters', bestFor:'Thermidor, Grilled, Butter preparations', calories:'90',  protein:'19g',   fat:'0.9g',  omega3:'0.2g', calcium:'96mg',  iron:'0.3mg' },
 //     { id:11, name:'Surmai',      price:920,  description:'King fish steaks',                         icon:'🐟', longDescription:'Surmai (King Fish) is a popular sea fish with firm texture.', origin:'Arabian Sea and Bay of Bengal', bestFor:'Fish steaks, Tandoori, Pan fry', calories:'139', protein:'22g',   fat:'5.2g',  omega3:'1.8g', calcium:'34mg',  iron:'1.7mg' },
 //     { id:12, name:'Bangda',      price:280,  description:'Indian mackerel',                          icon:'🐠', longDescription:'Bangda (Indian Mackerel) is an oily fish with strong flavor.', origin:'Coastal waters of India', bestFor:'Rava fry, Curry, Recheado preparations', calories:'205', protein:'18.6g', fat:'13.9g', omega3:'2.6g', calcium:'12mg',  iron:'1.6mg' }
-        { id:13, name:'Vetki Fish',      price:400, description:'Premium Bengali favourite, boneless fillets', image:'images/Vetki.webb',      longDescription:'Vetki (Bhetki) is a prized fish in Bengali cuisine, loved for its firm white flesh and very few bones.', origin:'Brackish waters of the Sundarbans and Bay of Bengal', bestFor:'Fish fry, Bhetki Paturi, Fish finger, Bhapa', calories:'97',  protein:'20g',   fat:'1.8g', omega3:'0.5g', calcium:'30mg', iron:'0.6mg' },
-        { id:14, name:'Vola Vetki Fish', price:250, description:'Soft, tasty and budget-friendly',             image:'images/Vola-Vetki.webb', longDescription:'Vola Vetki (Bhola Bhetki) is a soft-fleshed spotted sea fish, a cheaper everyday alternative to Vetki.',  origin:'Coastal waters of the Bay of Bengal',                bestFor:'Macher Jhol, Fish fry, Kalia',                 calories:'104', protein:'18g',   fat:'3g',   omega3:'0.4g', calcium:'40mg', iron:'0.8mg' },
+    { id:13, name:'Vetki Fish',      price:400, description:'Premium Bengali favourite, boneless fillets', image:'images/Vetki.webp',      longDescription:'Vetki (Bhetki) is a prized fish in Bengali cuisine, loved for its firm white flesh and very few bones.', origin:'Brackish waters of the Sundarbans and Bay of Bengal', bestFor:'Fish fry, Bhetki Paturi, Fish finger, Bhapa', calories:'97',  protein:'20g',   fat:'1.8g', omega3:'0.5g', calcium:'30mg', iron:'0.6mg' },
+    { id:14, name:'Vola Vetki Fish', price:250, description:'Soft, tasty and budget-friendly',             image:'images/Vola-Vetki.webp', longDescription:'Vola Vetki (Bhola Bhetki) is a soft-fleshed spotted sea fish, a cheaper everyday alternative to Vetki.',  origin:'Coastal waters of the Bay of Bengal',                bestFor:'Macher Jhol, Fish fry, Kalia',                 calories:'104', protein:'18g',   fat:'3g',   omega3:'0.4g', calcium:'40mg', iron:'0.8mg' },
 ];
 
 // ─── PRODUCT IMAGE ────────────────────────────────────────────────────────────
@@ -109,10 +109,53 @@ function whatsappOrder(productId) {
         'Price: ₹' + product.price.toLocaleString('en-IN') + '/kg (approx. ' + formatRupees(total) + ')',
         '',
         'Delivery PIN: ' + (currentUserPin || '-'),
-        'Please confirm availability.'
+        'Please confirm availability.',
+        '',
+        'After you confirm, I will pay here:',
+        orderLink(productId, grams, qty)
     ];
     openWhatsApp(lines.join('\n'));
 }
+// Link that reopens the site with this exact order in checkout
+function orderLink(productId, grams, qty) {
+    const base = location.origin + location.pathname;
+    let url = base + '?order=' + productId + '-' + grams + '-' + qty;
+    if (currentUserPin) url += '&pin=' + currentUserPin;
+    return url;
+}
+// Read ?order=ID-GRAMS-QTY&pin=PIN from the link and open checkout with it
+let pendingOrder = null;
+function readOrderLink() {
+    const params = new URLSearchParams(location.search);
+    const pin = params.get('pin');
+    if (pin && CONFIG.validPinCodes.includes(pin) && !localStorage.getItem(CONFIG.sessionStorageKey)) {
+        localStorage.setItem(CONFIG.sessionStorageKey, pin);
+    }
+    const m = (params.get('order') || '').match(/^(\d+)-(\d+)-(\d+)$/);
+    if (m) {
+        const id = +m[1], grams = +m[2], qty = Math.min(Math.max(+m[3], 1), 20);
+        if (products.some(p => p.id === id) && WEIGHT_OPTIONS.some(([g]) => g === grams)) {
+            pendingOrder = { id, grams, qty };
+        }
+    }
+    // remove the parameters so a refresh doesn't reopen checkout
+    if (params.has('order') || params.has('pin')) history.replaceState(null, '', location.pathname);
+}
+function runPendingOrder() {
+    if (!pendingOrder) return;
+    const { id, grams, qty } = pendingOrder;
+    pendingOrder = null;
+    const radio = document.getElementById(`w${id}_${grams}`);
+    const qtyEl = document.getElementById('card_qty_' + id);
+    if (!radio || !qtyEl) {
+        alert('Sorry, this fish is sold out for today. Please message us on WhatsApp.');
+        return;
+    }
+    radio.checked = true;
+    qtyEl.textContent = qty;
+    buyNowFromCard(id);
+}
+
 // General buttons (footer etc.): a template showing every size option
 function whatsappEnquiryMessage() {
     return [
@@ -139,6 +182,7 @@ let currentOrderDetails = null;
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 function init() {
     loadStock();
+    readOrderLink();
     const storedPin = localStorage.getItem(CONFIG.sessionStorageKey);
     if (storedPin && CONFIG.validPinCodes.includes(storedPin)) {
         currentUserPin = storedPin;
@@ -147,6 +191,7 @@ function init() {
         document.getElementById('pinModal').style.display = 'none';
         document.getElementById('mainPage').style.display = 'block';
         loadProducts();
+        runPendingOrder();
     } else {
         document.getElementById('pinModal').style.display = 'block';
         document.getElementById('mainPage').style.display = 'none';
@@ -242,6 +287,7 @@ function verifyPinCode() {
         document.getElementById('pinModal').style.display = 'none';
         document.getElementById('mainPage').style.display = 'block';
         loadProducts();
+        runPendingOrder();
     } else {
         document.getElementById('pinModal').style.display = 'none';
         document.getElementById('overlay').style.display  = 'block';
